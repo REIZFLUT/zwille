@@ -31,12 +31,19 @@ und Nutzer (`429` mit `Retry-After`).
 | `title` | string\|null | interne Bezeichnung |
 | `redirect_type` | int | 302 (Standard), 301, 307, 308 |
 | `active` | bool | |
+| `starts_at` | string\|null | ISO 8601; der Link ist erst ab diesem Zeitpunkt erreichbar |
 | `expires_at` | string\|null | ISO 8601 |
+| `max_clicks` | int\|null | Klicklimit; leer/fehlend = unbegrenzt, ein Wert < 1 ergibt `422` |
+| `fallback_url` | string\|null | Ausweich-Ziel für nicht erreichbare Links, nur http(s); sonst `422` |
 | `localisations` | object | `{"en": "https://…", "de-at": "https://…"}` – ersetzt alle bisherigen |
 | `tags` | string[] | Tag-Namen; ersetzt alle bisherigen. Unbekannte Namen werden für den Token-Inhaber angelegt |
 
 `notes` (interne Notiz) wird **weder angenommen noch zurückgegeben** – ein Body mit `notes`
 antwortet mit `422` (`validation_failed`).
+
+`max_clicks` begrenzt die Zahl der Weiterleitungen. Die Zählung erfolgt erst nach dem Absenden der
+Antwort (kein Worker, keine Queue), ist also **ungefähr** – ein kurzer gleichzeitiger Ansturm kann ein
+paar Klicks mehr durchlassen. Ein `max_clicks` < 1 oder eine `fallback_url` ohne http(s) ergibt `422`.
 
 Antwort (`data`): zusätzlich `id`, `short_url`, `tags`, `clicks`, `last_click_at`,
 `owner`, `created_at`, `updated_at`.

@@ -577,3 +577,15 @@ audit.action.link.created: Link angelegt
 audit.action.link.updated: Link geändert
 audit.action.link.deleted: Link gelöscht
 audit.action.link.tags_changed: Link-Tags geändert
+# --- Zeitfenster und Limits (Paket 3) ---
+links.status.scheduled: Geplant
+links.status.exhausted: Limit erreicht
+link.starts_at: Beginnt am
+link.starts_at_help: Der Link ist erst ab diesem Zeitpunkt erreichbar. Leer lassen für sofort.
+link.max_clicks: Maximale Klicks
+link.max_clicks_help: Nach so vielen Klicks wird der Link gesperrt. Leer lassen für unbegrenzt. Die Zählung ist ungefähr – ein kurzer Ansturm kann ein paar Klicks mehr durchlassen.
+link.max_clicks_unlimited: Unbegrenzt
+link.fallback_url: Ausweich-Adresse
+link.fallback_url_help: Wohin Besucher geleitet werden, wenn der Link nicht aktiv ist (geplant, abgelaufen, deaktiviert oder Limit erreicht). Nur http(s).
+redirect.exhausted.title: Klicklimit erreicht
+redirect.exhausted.text: Für diesen Kurzlink ist die maximale Anzahl an Klicks erreicht.

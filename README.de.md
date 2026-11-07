@@ -40,6 +40,9 @@ Aufgabe erledigt.
   Team tragen, die nie über die API oder eine Weiterleitung sichtbar wird.
 - **Automatische Seitentitel** – beim Anlegen vom Ziel abgeholt (abschaltbar, mit SSRF-Schutz, damit der
   Server nie private Adressen aufruft).
+- **Zeitfenster und Klicklimit** – einen Link erst zu einem späteren Zeitpunkt starten, die Zahl der Klicks
+  begrenzen (oder unbegrenzt lassen) und Besucher eines nicht erreichbaren Links statt auf eine Hinweisseite
+  auf eine Ausweich-Adresse leiten.
 - QR-Codes (SVG/PNG), CSV-Export, Ablaufdatum, Aktiv-Schalter, 301/302/307/308.
 - **REST-API** mit persönlichen Tokens ([docs/API.md](docs/API.md)).
 - **Plugins** – typisierte Events statt Eingriffen in den Kern: Weiterleitungsziele umschreiben,

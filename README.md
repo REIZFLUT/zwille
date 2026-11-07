@@ -40,6 +40,9 @@ its job.
   is never exposed through the API or a redirect.
 - **Automatic page titles** – fetched from the target page when a link is created (switchable, with an
   SSRF guard so the server never calls private addresses).
+- **Time window and click limit** – schedule a link to start at a future time, cap the number of clicks
+  (or leave it unlimited) and send visitors of an unavailable link to a fallback URL instead of a notice
+  page.
 - QR codes (SVG/PNG), CSV export, expiry date, active toggle, 301/302/307/308.
 - **REST API** with personal tokens ([docs/API.md](docs/API.md)).
 - **Plugins** – typed events instead of patched core files: rewrite redirect targets, veto

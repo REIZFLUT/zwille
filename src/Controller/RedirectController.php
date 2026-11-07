@@ -10,6 +10,8 @@ use App\Entity\Link;
 use App\Event\Redirect\RedirectResolvingEvent;
 use App\Event\Redirect\RedirectUnresolvedEvent;
 use App\Link\AcceptLanguageMatcher;
+use App\Link\LinkAvailability;
+use App\Link\LinkUnavailability;
 use App\Repository\LinkRepository;
 use App\Tracking\ClickRecorder;
 use Psr\Log\LoggerInterface;
@@ -28,6 +30,7 @@ final class RedirectController extends AbstractController
         private readonly HostRegistry $hosts,
         private readonly LinkRepository $links,
         private readonly ClickRecorder $clickRecorder,
+        private readonly LinkAvailability $availability,
         private readonly EventDispatcherInterface $dispatcher,
         private readonly LoggerInterface $logger,
     ) {
@@ -55,8 +58,13 @@ final class RedirectController extends AbstractController
             if (null === $domain || !$domain->isActive()) {
                 return $this->unknownDomain();
             }
-            if (!$link->isActive() || $link->isExpired()) {
-                return $this->page('redirect/gone.html.twig', Response::HTTP_GONE, ['domain' => $domain]);
+            // Whether the link may redirect at all is decided in one place (LinkAvailability):
+            // inactive, scheduled, exhausted or expired links leave here - before plugins see
+            // the link and before any click is scheduled. A configured fallback target catches
+            // every one of those reasons.
+            $reason = $this->availability->reason($link);
+            if (null !== $reason) {
+                return $this->unavailable($reason, $link, $domain);
             }
 
             $resolving = new RedirectResolvingEvent($request, $link, self::targetFor($link, $request), $link->getRedirectType());
@@ -113,6 +121,28 @@ final class RedirectController extends AbstractController
     private function unknownDomain(): Response
     {
         return $this->page('redirect/unknown_domain.html.twig', Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * A link that cannot redirect right now. A configured fallback wins over the notice pages;
+     * a scheduled link without one must be indistinguishable from an unknown code (404, not 410),
+     * while disabled, exhausted and expired links keep the gone page.
+     */
+    private function unavailable(LinkUnavailability $reason, Link $link, Domain $domain): Response
+    {
+        $fallback = $link->getFallbackUrl();
+        if (null !== $fallback) {
+            return $this->redirectTo($fallback, Response::HTTP_FOUND);
+        }
+
+        if (LinkUnavailability::Scheduled === $reason) {
+            return $this->page('redirect/not_found.html.twig', Response::HTTP_NOT_FOUND, ['domain' => $domain]);
+        }
+        if (LinkUnavailability::Exhausted === $reason) {
+            return $this->page('redirect/exhausted.html.twig', Response::HTTP_GONE, ['domain' => $domain]);
+        }
+
+        return $this->page('redirect/gone.html.twig', Response::HTTP_GONE, ['domain' => $domain]);
     }
 
     public static function targetFor(Link $link, Request $request): string

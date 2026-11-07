@@ -53,7 +53,7 @@ final class LinkController extends AbstractController
     private const array DIRECTIONS = ['asc', 'desc'];
 
     /** @var list<string> whitelisted status filters; anything else means "all" */
-    private const array STATUSES = ['live', 'inactive', 'expired'];
+    private const array STATUSES = ['live', 'inactive', 'expired', 'scheduled', 'exhausted'];
 
     /** @var list<string> whitelisted bulk actions */
     private const array BULK_ACTIONS = ['activate', 'deactivate', 'delete', 'move', 'tag_add', 'tag_remove'];

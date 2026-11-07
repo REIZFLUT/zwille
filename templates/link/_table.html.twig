@@ -51,8 +51,8 @@
                         <td class="link-cell">
                             <a class="short" href="{{ path('app_link_show', {id: link.id}) }}">{{ link.domain.displayName }}/<wbr>{{ link.code }}</a>
                             {% if not bulk %}<span class="target truncate" title="{{ link.targetUrl }}">{{ link.title ?? link.targetUrl }}</span>{% endif %}
-                            {% if not link.active %}<span class="badge badge-warning">{{ 'link.inactive'|trans }}</span>{% endif %}
-                            {% if link.expired %}<span class="badge badge-danger">{{ 'link.expired'|trans }}</span>{% endif %}
+                            {% set status = link_status(link) %}
+                            {% if status != 'live' %}<span class="badge badge-{{ status == 'inactive' ? 'warning' : (status == 'scheduled' ? 'accent' : 'danger') }}">{{ ('links.status.' ~ status)|trans }}</span>{% endif %}
                             {% if link.localisations|length > 0 %}<span class="badge">{{ link.localisations|map(l => l.language)|join(' · ') }}</span>{% endif %}
                             {% for tag in link.tags %}
                                 {% if bulk %}

@@ -14,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
@@ -21,6 +22,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @extends AbstractType<Link>
@@ -82,12 +85,32 @@ final class LinkType extends AbstractType
                     ],
                     'help' => 'link.redirect_help',
                 ])
+                ->add('startsAt', DateTimeType::class, [
+                    'label' => 'link.starts_at',
+                    'required' => false,
+                    'widget' => 'single_text',
+                    'input' => 'datetime_immutable',
+                    'with_seconds' => false,
+                    'help' => 'link.starts_at_help',
+                ])
                 ->add('expiresAt', DateTimeType::class, [
                     'label' => 'link.expires_at',
                     'required' => false,
                     'widget' => 'single_text',
                     'input' => 'datetime_immutable',
                     'with_seconds' => false,
+                ])
+                ->add('maxClicks', IntegerType::class, [
+                    'label' => 'link.max_clicks',
+                    'required' => false,
+                    'attr' => ['min' => 1],
+                    'help' => 'link.max_clicks_help',
+                ])
+                ->add('fallbackUrl', UrlType::class, [
+                    'label' => 'link.fallback_url',
+                    'required' => false,
+                    'default_protocol' => 'https',
+                    'help' => 'link.fallback_url_help',
                 ])
                 ->add('active', CheckboxType::class, ['label' => 'link.active', 'required' => false])
                 ->add('localisations', CollectionType::class, [
@@ -119,11 +142,26 @@ final class LinkType extends AbstractType
             'autofocus' => false,
             // The current user's tags; the dashboard quick form passes none and shows no field.
             'tags' => [],
+            // Cross-field check: a start in the future must precede the expiry.
+            'constraints' => [new Callback([self::class, 'validateWindow'])],
         ]);
         $resolver->setRequired('domains');
         $resolver->setAllowedTypes('domains', 'array');
         $resolver->setAllowedTypes('tags', 'array');
         $resolver->setAllowedTypes('full', 'bool');
         $resolver->setAllowedTypes('autofocus', 'bool');
+    }
+
+    /**
+     * Form-level check: with both a start and an expiry set, the start must come first.
+     * maxClicks >= 1 and the http(s) fallback URL are enforced by constraints on Link itself.
+     */
+    public static function validateWindow(Link $link, ExecutionContextInterface $context): void
+    {
+        $startsAt = $link->getStartsAt();
+        $expiresAt = $link->getExpiresAt();
+        if (null !== $startsAt && null !== $expiresAt && $startsAt >= $expiresAt) {
+            $context->buildViolation('link.window.invalid')->addViolation();
+        }
     }
 }

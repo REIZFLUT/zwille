@@ -51,7 +51,10 @@
                 <div class="card">
                     <h2>{{ 'link.options'|trans }}</h2>
                     {{ form_row(form.redirectType) }}
+                    {{ form_row(form.startsAt) }}
                     {{ form_row(form.expiresAt) }}
+                    {{ form_row(form.maxClicks) }}
+                    {{ form_row(form.fallbackUrl) }}
                     {{ form_row(form.active) }}
                 </div>
             {% endif %}
