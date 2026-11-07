@@ -57,6 +57,20 @@ final class ClickRecorder
         $request->attributes->set(self::ATTRIBUTE, $link->getId());
     }
 
+    /**
+     * Schedules the click of a successful unlock. The unlock is a POST (the password form), and
+     * that POST is the visitor's real arrival at the target, so it is counted even though the
+     * regular schedule() only tracks GET requests. Bots and prefetches stay uncounted.
+     */
+    public function scheduleUnlock(Request $request, Link $link): void
+    {
+        if (!$this->settings->getBool(Settings::TRACKING) || self::isPrefetch($request)) {
+            return;
+        }
+
+        $request->attributes->set(self::ATTRIBUTE, $link->getId());
+    }
+
     public function __invoke(TerminateEvent $event): void
     {
         $linkId = $event->getRequest()->attributes->get(self::ATTRIBUTE);

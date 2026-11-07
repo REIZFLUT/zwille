@@ -9,16 +9,21 @@ use App\Entity\Domain;
 use App\Entity\Link;
 use App\Event\Redirect\RedirectResolvingEvent;
 use App\Event\Redirect\RedirectUnresolvedEvent;
-use App\Link\AcceptLanguageMatcher;
 use App\Link\LinkAvailability;
+use App\Link\LinkPassword;
+use App\Link\LinkTargetResolver;
 use App\Link\LinkUnavailability;
+use App\Link\LinkUnlockToken;
+use App\Link\UnlockTokenStatus;
 use App\Repository\LinkRepository;
 use App\Tracking\ClickRecorder;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -31,6 +36,11 @@ final class RedirectController extends AbstractController
         private readonly LinkRepository $links,
         private readonly ClickRecorder $clickRecorder,
         private readonly LinkAvailability $availability,
+        private readonly LinkTargetResolver $resolver,
+        private readonly LinkPassword $passwords,
+        private readonly LinkUnlockToken $tokens,
+        #[Autowire(service: 'limiter.link_gate')]
+        private readonly RateLimiterFactoryInterface $gateLimiter,
         private readonly EventDispatcherInterface $dispatcher,
         private readonly LoggerInterface $logger,
     ) {
@@ -67,7 +77,17 @@ final class RedirectController extends AbstractController
                 return $this->unavailable($reason, $link, $domain);
             }
 
-            $resolving = new RedirectResolvingEvent($request, $link, self::targetFor($link, $request), $link->getRedirectType());
+            // Password gate, right after availability and before plugins or clicks: while the
+            // visitor has not unlocked, no plugin sees the link and no click is scheduled, and
+            // the target never reaches the response.
+            if ($link->hasPassword()) {
+                $gate = $this->unlock($request, $link, $domain);
+                if (null !== $gate) {
+                    return $gate;
+                }
+            }
+
+            $resolving = new RedirectResolvingEvent($request, $link, $this->resolver->resolve($link, $request), $link->getRedirectType());
             $this->dispatcher->dispatch($resolving);
             if ($resolving->isVetoed()) {
                 // A veto must be indistinguishable from an unknown link: the visitor gets the
@@ -145,15 +165,90 @@ final class RedirectController extends AbstractController
         return $this->page('redirect/gone.html.twig', Response::HTTP_GONE, ['domain' => $domain]);
     }
 
-    public static function targetFor(Link $link, Request $request): string
+    /**
+     * Password gate of a protected link.
+     *
+     * Returns null once the visitor unlocked (the normal redirect flow continues); otherwise the
+     * response to send: the form, the throttled page or - for a foreign or forged token - the
+     * unknown-link page.
+     */
+    private function unlock(Request $request, Link $link, Domain $domain): ?Response
     {
-        $localised = $link->getLocalisedTargets();
-        if ([] === $localised) {
-            return $link->getTargetUrl();
+        if (!$request->isMethod('POST')) {
+            return $this->unlockFormOrThrottle($request, $link, $domain);
         }
-        $language = AcceptLanguageMatcher::bestMatch($request->headers->get('Accept-Language'), array_keys($localised));
 
-        return null === $language ? $link->getTargetUrl() : $localised[$language];
+        $code = (string) $request->request->get('code', '');
+        $expiry = (int) $request->request->get('expiry', 0);
+        $mac = (string) $request->request->get('mac', '');
+
+        // A token bound to another link, or a rewritten mac, is indistinguishable from an unknown
+        // code: the visitor gets the 404 page, never a form.
+        if ($code !== $link->getCode()) {
+            return $this->page('redirect/not_found.html.twig', Response::HTTP_NOT_FOUND, ['domain' => $domain]);
+        }
+        $status = $this->tokens->verify($link->getCode(), $expiry, $mac);
+        if (UnlockTokenStatus::Invalid === $status) {
+            return $this->page('redirect/not_found.html.twig', Response::HTTP_NOT_FOUND, ['domain' => $domain]);
+        }
+
+        $password = $request->request->get('password');
+        if (UnlockTokenStatus::Expired === $status || !\is_string($password) || '' === $password) {
+            // An overdue token or a missing password field simply gets a fresh form - no hint
+            // about closeness, no attempt counted.
+            return $this->unlockFormOrThrottle($request, $link, $domain);
+        }
+
+        $limiter = $this->gateLimiter->create($this->gateKey($request, $link));
+        if (!$limiter->consume()->isAccepted()) {
+            return $this->unlockThrottled($domain);
+        }
+        if (!$this->passwords->verify($password, $link->getPasswordHash())) {
+            return $this->unlockForm($request, $link, $domain, error: true);
+        }
+
+        // Correct password: release the attempts and count this arrival as the click, then let
+        // the normal path (plugin event, redirect) run.
+        $limiter->reset();
+        $this->clickRecorder->scheduleUnlock($request, $link);
+
+        return null;
+    }
+
+    /** Serves the form, unless the attempts are used up - then the throttled page, never the form. */
+    private function unlockFormOrThrottle(Request $request, Link $link, Domain $domain): Response
+    {
+        // consume(0) only reads the remaining tokens (it writes nothing back).
+        if ($this->gateLimiter->create($this->gateKey($request, $link))->consume(0)->getRemainingTokens() < 1) {
+            return $this->unlockThrottled($domain);
+        }
+
+        return $this->unlockForm($request, $link, $domain);
+    }
+
+    private function unlockForm(Request $request, Link $link, Domain $domain, bool $error = false): Response
+    {
+        $token = $this->tokens->issue($link->getCode());
+
+        return $this->page('redirect/password.html.twig', Response::HTTP_OK, [
+            'domain' => $domain,
+            'code' => $link->getCode(),
+            'expiry' => $token['expiry'],
+            'mac' => $token['mac'],
+            'action' => $request->getPathInfo(),
+            'error' => $error,
+        ]);
+    }
+
+    private function unlockThrottled(Domain $domain): Response
+    {
+        return $this->page('redirect/throttled.html.twig', Response::HTTP_TOO_MANY_REQUESTS, ['domain' => $domain]);
+    }
+
+    /** Rate-limit key: client address plus short code, so one IP cannot hammer one link. */
+    private function gateKey(Request $request, Link $link): string
+    {
+        return ($request->getClientIp() ?? 'unknown').'|'.$link->getCode();
     }
 
     private function redirectTo(string $url, int $status): RedirectResponse

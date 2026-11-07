@@ -17,3 +17,7 @@ tag.name.taken: This tag already exists.
 tag.name.blank: Please enter a tag name.
 link.max_clicks.min: The click limit must be at least 1.
 link.window.invalid: The start time must be before the expiry time.
+link.password.too_short: 'The password must be at least 6 characters long.'
+link.password.too_long: 'The password is too long (at most 72 bytes).'
+device_targets.device.invalid: 'Please choose iOS, Android or desktop.'
+device_targets.duplicate: 'Each device may only be given once.'

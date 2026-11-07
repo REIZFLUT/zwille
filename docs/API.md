@@ -36,7 +36,9 @@ und Nutzer (`429` mit `Retry-After`).
 | `max_clicks` | int\|null | Klicklimit; leer/fehlend = unbegrenzt, ein Wert < 1 ergibt `422` |
 | `fallback_url` | string\|null | Ausweich-Ziel für nicht erreichbare Links, nur http(s); sonst `422` |
 | `localisations` | object | `{"en": "https://…", "de-at": "https://…"}` – ersetzt alle bisherigen |
+| `device_targets` | array | `[{"device": "ios", "url": "https://…"}, …]` für `ios`, `android`, `desktop` – ersetzt alle bisherigen. Ein unbekanntes Gerät oder eine Nicht-http(s)-URL ergibt `422` |
 | `tags` | string[] | Tag-Namen; ersetzt alle bisherigen. Unbekannte Namen werden für den Token-Inhaber angelegt |
+| `password` | string\|null | Schreibgeschützt: `null`/fehlend = Schutz unverändert, `""` = Schutz entfernen, sonst neues Passwort (mind. 6 Zeichen, höchstens 72 Bytes, sonst `422`). Der Hash wird nie zurückgegeben |
 
 `notes` (interne Notiz) wird **weder angenommen noch zurückgegeben** – ein Body mit `notes`
 antwortet mit `422` (`validation_failed`).
@@ -46,7 +48,17 @@ Antwort (kein Worker, keine Queue), ist also **ungefähr** – ein kurzer gleich
 paar Klicks mehr durchlassen. Ein `max_clicks` < 1 oder eine `fallback_url` ohne http(s) ergibt `422`.
 
 Antwort (`data`): zusätzlich `id`, `short_url`, `tags`, `clicks`, `last_click_at`,
-`owner`, `created_at`, `updated_at`.
+`owner`, `created_at`, `updated_at`, `password_protected` (bool) und `device_targets`
+(object wie `localisations`, z. B. `{"ios": "https://…"}`).
+
+`password` ist **schreibgeschützt**: Die Antwort enthält nie den Hash, sondern nur
+`password_protected` (`true`/`false`). Ein gesetztes Passwort schützt die Kurz-URL: Besucher
+bekommen zuerst ein Formular, das Ziel wird erst nach der richtigen Eingabe sichtbar (und nie
+vorher an Plugins oder in die Antwort gegeben).
+
+`device_targets` lösen in dieser Reihenfolge auf: Geräte-Ziel (iOS/iPadOS → `ios`,
+Android → `android`, alles andere inkl. Bots → `desktop`), sonst sprachabhängiges Ziel, sonst
+die Standardadresse. Als Eingabe ersetzt das übergebene Array die gesamte Menge.
 
 ## Beispiele
 

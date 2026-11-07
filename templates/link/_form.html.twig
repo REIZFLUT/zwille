@@ -44,6 +44,23 @@
                 </div>
                 {% do form.localisations.setRendered %}
             {% endif %}
+
+            {% if form.deviceTargets is defined %}
+                <div class="card">
+                    <h2>{{ 'device_targets.label'|trans }}</h2>
+                    <p class="small muted">{{ 'device_targets.help'|trans }}</p>
+                    <div id="deviceTargets"
+                         data-prototype="{{ include('link/_device_target_row.html.twig', {row: form.deviceTargets.vars.prototype})|e('html_attr') }}"
+                         data-index="{{ form.deviceTargets|length > 0 ? form.deviceTargets|last.vars.name + 1 : 0 }}">
+                        {% for row in form.deviceTargets %}
+                            {{ include('link/_device_target_row.html.twig', {row: row}) }}
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.deviceTargets) }}
+                    <button type="button" class="btn btn-sm" data-collection-add="#deviceTargets">+ {{ 'device_targets.add'|trans }}</button>
+                </div>
+                {% do form.deviceTargets.setRendered %}
+            {% endif %}
         </div>
 
         <div class="aside-sticky">
@@ -56,6 +73,20 @@
                     {{ form_row(form.maxClicks) }}
                     {{ form_row(form.fallbackUrl) }}
                     {{ form_row(form.active) }}
+                </div>
+            {% endif %}
+
+            {% if form.password is defined %}
+                <div class="card">
+                    <h2>{{ 'link.password'|trans }}</h2>
+                    <p class="small muted">{{ 'link.password_help'|trans }}</p>
+                    {% if form.vars.data.hasPassword %}
+                        <p class="help">{{ 'link.password_set'|trans }}</p>
+                    {% endif %}
+                    {{ form_row(form.password) }}
+                    {% if form.vars.data.hasPassword %}
+                        {{ form_row(form.removePassword) }}
+                    {% endif %}
                 </div>
             {% endif %}
 

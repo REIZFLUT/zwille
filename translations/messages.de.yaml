@@ -589,3 +589,24 @@ link.fallback_url: Ausweich-Adresse
 link.fallback_url_help: Wohin Besucher geleitet werden, wenn der Link nicht aktiv ist (geplant, abgelaufen, deaktiviert oder Limit erreicht). Nur http(s).
 redirect.exhausted.title: Klicklimit erreicht
 redirect.exhausted.text: Für diesen Kurzlink ist die maximale Anzahl an Klicks erreicht.
+
+# --- Passwort und Geraete (Paket 4) ---
+link.password: Passwortschutz
+link.password_help: 'Leer lassen, um den Link offen bzw. das bisherige Passwort unverändert zu lassen. Mit Passwort sehen Besucher zuerst ein Formular; das Ziel wird erst nach der richtigen Eingabe verraten.'
+link.password_set: 'Für diesen Link ist ein Passwort gesetzt. Ein neues Passwort ersetzt es; zum Entfernen das Kästchen ankreuzen.'
+link.remove_password: Passwortschutz entfernen
+device_targets.label: Geräte-Ziele
+device_targets.help: 'Je Gerät ein eigenes Ziel. Ohne Eintrag gilt die Sprach- bzw. Standardadresse; Bots und unbekannte Geräte bekommen das Desktop-Ziel.'
+device_targets.add: Geräte-Ziel hinzufügen
+device_targets.device: Gerät
+device_targets.target_url: Zieladresse
+device_targets.ios: iOS / iPadOS
+device_targets.android: Android
+device_targets.desktop: Desktop / sonstige
+redirect.password.title: Passwortgeschützt
+redirect.password.text: 'Dieser Kurzlink ist mit einem Passwort geschützt. Bitte gib es ein, um zum Ziel zu gelangen.'
+redirect.password.label: Passwort
+redirect.password.submit: Weiter
+redirect.password.wrong: 'Das Passwort stimmt nicht. Bitte versuche es erneut.'
+redirect.password.throttled_title: Zu viele Versuche
+redirect.password.throttled_text: 'Bitte warte einen Moment und versuche es später noch einmal.'

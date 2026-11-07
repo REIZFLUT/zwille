@@ -43,6 +43,8 @@ Aufgabe erledigt.
 - **Zeitfenster und Klicklimit** – einen Link erst zu einem späteren Zeitpunkt starten, die Zahl der Klicks
   begrenzen (oder unbegrenzt lassen) und Besucher eines nicht erreichbaren Links statt auf eine Hinweisseite
   auf eine Ausweich-Adresse leiten.
+- **Passwortgeschützte Links und Geräte-Ziele** – einen Link per Passwort schützen (das Ziel wird vor
+  der Freigabe nie verraten) und iOS-, Android- oder Desktop-Besucher auf unterschiedliche Ziele schicken.
 - QR-Codes (SVG/PNG), CSV-Export, Ablaufdatum, Aktiv-Schalter, 301/302/307/308.
 - **REST-API** mit persönlichen Tokens ([docs/API.md](docs/API.md)).
 - **Plugins** – typisierte Events statt Eingriffen in den Kern: Weiterleitungsziele umschreiben,

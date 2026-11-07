@@ -17,3 +17,7 @@ tag.name.taken: Diesen Tag gibt es schon.
 tag.name.blank: Bitte einen Tag-Namen angeben.
 link.max_clicks.min: Die Klickanzahl muss mindestens 1 betragen.
 link.window.invalid: Der Startzeitpunkt muss vor dem Ablaufzeitpunkt liegen.
+link.password.too_short: 'Das Passwort muss mindestens 6 Zeichen haben.'
+link.password.too_long: 'Das Passwort ist zu lang (höchstens 72 Bytes).'
+device_targets.device.invalid: 'Bitte iOS, Android oder Desktop wählen.'
+device_targets.duplicate: 'Jedes Gerät darf nur einmal angegeben werden.'

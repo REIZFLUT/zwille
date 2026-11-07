@@ -1,0 +1,19 @@
+# Rate limit for the unlock gate of password-protected links. Kept in its own file so the
+# authentication limits (rate_limiter_auth.yaml) and the tracking limit stay untouched.
+framework:
+    rate_limiter:
+        # One client address may make about ten password attempts on one short code within
+        # fifteen minutes. Beyond that the gate stops rendering the form and answers the
+        # throttled page (429) instead. The limiter is keyed with "<client ip>|<code>" by the
+        # RedirectController, so one address cannot hammer a single link.
+        link_gate:
+            policy: fixed_window
+            limit: 10
+            interval: '15 minutes'
+
+when@test:
+    framework:
+        rate_limiter:
+            link_gate:
+                # Keeps the throttle test short; production uses the limit above.
+                limit: 3
