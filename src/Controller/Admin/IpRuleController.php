@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Audit\AuditLogger;
 use App\Entity\AdminIpRule;
 use App\Repository\AdminIpRuleRepository;
 use App\Security\AdminIpPolicy;
@@ -24,6 +25,7 @@ final class IpRuleController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly AdminIpRuleRepository $rules,
         private readonly AdminIpPolicy $policy,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -47,6 +49,7 @@ final class IpRuleController extends AbstractController
             if ([] === $errors) {
                 $this->em->persist($rule);
                 $this->em->flush();
+                $this->audit->record(AuditLogger::IP_RULE_ADDED, ['cidr' => $rule->getCidr(), 'label' => $rule->getLabel()], targetType: 'ip_rule', targetId: $rule->getId());
                 $this->addFlash('success', 'flash.ip_rule_added');
 
                 return $this->redirectToRoute('app_admin_ip_rules');
@@ -75,8 +78,11 @@ final class IpRuleController extends AbstractController
 
             return $this->redirectToRoute('app_admin_ip_rules');
         }
+        $ruleId = $rule->getId();
+        $cidr = $rule->getCidr();
         $this->em->remove($rule);
         $this->em->flush();
+        $this->audit->record(AuditLogger::IP_RULE_DELETED, ['cidr' => $cidr], targetType: 'ip_rule', targetId: $ruleId);
         $this->addFlash('success', 'flash.ip_rule_deleted');
 
         return $this->redirectToRoute('app_admin_ip_rules');

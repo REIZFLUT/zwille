@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 parameters:
     app.default_timezone: 'Europe/Berlin'
+    # Fallback for AUDIT_RETENTION_DAYS (see App\Command\AuditPruneCommand): the "default"
+    # env processor resolves its fallback from a container parameter, not a literal.
+    audit.default_retention_days: 365
 
 services:
     _defaults:

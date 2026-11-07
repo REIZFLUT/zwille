@@ -45,6 +45,7 @@ its job.
 - **Plugins** – typed events instead of patched core files: rewrite redirect targets, veto
   clicks, reject links with a visible message, extend API payloads and the admin UI
   ([docs/EXTENDING.md](docs/EXTENDING.md)).
+- **Audit log** – security-relevant actions are recorded with actor, time and a small context: sign-in/out, 2FA, password, passkey and API-token changes, admin changes to users, domains, IP rules and settings, and every link create/update/delete. Filterable in the admin area and pruned by retention.
 - Interface in German and English, light/dark, usable on mobile, custom logo and accent colour
   (default: Simpsons yellow `#fed90f`; text and font colours are calculated for WCAG contrast,
   the favicon picks up the colour).

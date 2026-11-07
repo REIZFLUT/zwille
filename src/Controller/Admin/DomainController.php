@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Audit\AuditLogger;
 use App\Domain\HostRegistry;
 use App\Entity\Domain;
 use App\Form\DomainType;
@@ -29,6 +30,7 @@ final class DomainController extends AbstractController
         private readonly DomainRepository $domains,
         private readonly HostRegistry $hosts,
         private readonly TranslatorInterface $translator,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -71,8 +73,11 @@ final class DomainController extends AbstractController
         foreach ($domain->getUsers() as $user) {
             $user->removeDomain($domain);
         }
+        $domainId = $domain->getId();
+        $hostname = $domain->getHostname();
         $this->em->remove($domain);
         $this->em->flush();
+        $this->audit->record(AuditLogger::DOMAIN_DELETED, ['hostname' => $hostname], targetType: 'domain', targetId: $domainId);
         $this->addFlash('success', 'flash.domain_deleted');
 
         return $this->redirectToRoute('app_admin_domains');
@@ -81,18 +86,31 @@ final class DomainController extends AbstractController
     /** @param FormInterface<Domain> $form */
     private function handle(Request $request, FormInterface $form, Domain $domain): Response
     {
+        $isNew = null === $domain->getId();
+        // Captured before the form binds the request - the entity is mutated in place.
+        $beforeHostname = $domain->getHostname();
+
         $form->handleRequest($request);
         if ($form->isSubmitted() && $this->hosts->isAdminHost($domain->getHostname())) {
             $form->get('hostname')->addError(new FormError($this->translator->trans('domain.hostname.is_admin', domain: 'validators')));
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (null === $domain->getId()) {
+            if ($isNew) {
                 $this->em->persist($domain);
             }
             $this->em->flush();
             if ($domain->isDefault()) {
                 $this->domains->clearDefaultExcept($domain);
+            }
+            if ($isNew) {
+                $this->audit->record(AuditLogger::DOMAIN_CREATED, ['hostname' => $domain->getHostname()], targetType: 'domain', targetId: $domain->getId());
+            } else {
+                $context = ['hostname' => $domain->getHostname()];
+                if ($beforeHostname !== $domain->getHostname()) {
+                    $context['previous_hostname'] = $beforeHostname;
+                }
+                $this->audit->record(AuditLogger::DOMAIN_UPDATED, $context, targetType: 'domain', targetId: $domain->getId());
             }
             $this->addFlash('success', 'flash.domain_saved');
 

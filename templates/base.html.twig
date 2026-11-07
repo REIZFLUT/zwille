@@ -50,6 +50,7 @@
                         {{ ui.nav_item(path('app_admin_ip_rules'), 'nav.ip_rules'|trans, 'shield', route starts with 'app_admin_ip') }}
                         {{ ui.nav_item(path('app_admin_import'), 'nav.import'|trans, 'upload', route starts with 'app_admin_import') }}
                         {{ ui.nav_item(path('app_admin_settings'), 'nav.settings'|trans, 'sliders', route == 'app_admin_settings') }}
+                        {{ ui.nav_item(path('app_admin_audit'), 'nav.audit'|trans, 'history', route == 'app_admin_audit') }}
                         {# Plugin entries append after the built-in admin points; each plugin ships its own route and access control. #}
                         {% for item in plugin_admin_nav() %}
                             {{ ui.nav_item(item.url, item.label, 'plugin', item.url starts with '/' and (path_info == item.url or path_info starts with item.url|trim('/', 'right') ~ '/')) }}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Audit\AuditLogger;
 use App\Entity\ApiToken;
 use App\Entity\User;
 use App\Entity\WebauthnCredential;
@@ -39,6 +40,7 @@ final class ProfileController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly WebauthnCredentialRepository $credentials,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -60,6 +62,7 @@ final class ProfileController extends AbstractController
         if ($passwordForm->isSubmitted() && $passwordForm->isValid()) {
             $user->setPassword($hasher->hashPassword($user, (string) $passwordForm->get('plainPassword')->getData()));
             $this->em->flush();
+            $this->audit->record(AuditLogger::PASSWORD_CHANGED, actor: $user, targetType: 'user', targetId: $user->getId());
             $this->addFlash('success', 'flash.password_changed');
 
             return $this->redirectToRoute('app_profile');
@@ -172,6 +175,7 @@ final class ProfileController extends AbstractController
                     ->setTotpEnabled(true)
                     ->replaceBackupCodes($codes);
                 $this->em->flush();
+                $this->audit->record(AuditLogger::TWO_FA_ENABLED, actor: $user, targetType: 'user', targetId: $user->getId());
                 $session->remove(self::TOTP_SESSION_KEY);
                 $session->set(self::BACKUP_CODES_SESSION_KEY, $codes);
                 $this->addFlash('success', 'flash.totp_enabled');
@@ -236,6 +240,7 @@ final class ProfileController extends AbstractController
         }
         $user->setTotpEnabled(false);
         $this->em->flush();
+        $this->audit->record(AuditLogger::TWO_FA_DISABLED, actor: $user, targetType: 'user', targetId: $user->getId());
         $this->addFlash('success', 'flash.totp_disabled');
 
         return $this->redirectToRoute('app_profile_security');
@@ -250,6 +255,7 @@ final class ProfileController extends AbstractController
         $codes = self::generateBackupCodes();
         $user->replaceBackupCodes($codes);
         $this->em->flush();
+        $this->audit->record(AuditLogger::BACKUP_CODES_REGENERATED, actor: $user, targetType: 'user', targetId: $user->getId());
         $request->getSession()->set(self::BACKUP_CODES_SESSION_KEY, $codes);
 
         return $this->redirectToRoute('app_profile_security');
@@ -279,6 +285,7 @@ final class ProfileController extends AbstractController
         }
         $this->em->remove($credential);
         $this->em->flush();
+        $this->audit->record(AuditLogger::PASSKEY_REMOVED, ['name' => $credential->getName()], actor: $user, targetType: 'user', targetId: $user->getId());
         $this->addFlash('success', 'flash.passkey_deleted');
 
         return $this->redirectToRoute('app_profile_security');
@@ -301,6 +308,7 @@ final class ProfileController extends AbstractController
             );
             $this->em->persist($token);
             $this->em->flush();
+            $this->audit->record(AuditLogger::TOKEN_CREATED, ['name' => $token->getName()], actor: $user, targetType: 'api_token', targetId: $token->getId());
         }
 
         return $this->render('profile/tokens.html.twig', [
@@ -319,6 +327,7 @@ final class ProfileController extends AbstractController
         }
         $this->em->remove($token);
         $this->em->flush();
+        $this->audit->record(AuditLogger::TOKEN_REVOKED, ['name' => $token->getName()], actor: $user, targetType: 'api_token', targetId: $token->getId());
         $this->addFlash('success', 'flash.token_deleted');
 
         return $this->redirectToRoute('app_profile_tokens');

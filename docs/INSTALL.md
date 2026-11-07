@@ -121,6 +121,7 @@ stellt auf die `DB_*`-Variablen um.
 | `APP_TIMEZONE` | Zeitzone der Statistik, Standard `Europe/Berlin` |
 | `GEOIP_DATABASE_PATH` | optional, Pfad zu `GeoLite2-Country.mmdb` (MaxMind, kostenloses Konto) oder `dbip-country-lite.mmdb` (DB-IP, CC BY 4.0) |
 | `CLICK_RETENTION_DAYS` | Aufbewahrung der Klicks, Standard 730, `0` = unbegrenzt |
+| `AUDIT_RETENTION_DAYS` | Aufbewahrung des Audit-Logs, Standard 365, `0` = unbegrenzt |
 
 ## Datenbank wählen
 
@@ -190,6 +191,8 @@ HTTP leitet auf HTTPS um.
 ```cron
 # Klicks älter als CLICK_RETENTION_DAYS löschen
 15 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:clicks:prune --quiet
+# Audit-Log älter als AUDIT_RETENTION_DAYS löschen
+20 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:audit:prune --quiet
 # Sicherung der Datenbank (konsistent im laufenden Betrieb), 14 Tage behalten.
 # SQLite-Sicherungen enden auf .sqlite, MariaDB/MySQL-Sicherungen auf .sql.gz.
 30 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:db:backup --quiet && find /var/www/eatmyshort/var/backup \( -name '*.sqlite' -o -name '*.sql.gz' \) -mtime +14 -delete

@@ -45,6 +45,7 @@ Aufgabe erledigt.
 - **Plugins** – typisierte Events statt Eingriffen in den Kern: Weiterleitungsziele umschreiben,
   Klicks ablehnen, Links mit sichtbarer Meldung zurückweisen, API-Antworten und Admin-Oberfläche
   erweitern ([docs/EXTENDING.md](docs/EXTENDING.md)).
+- **Audit-Log** – sicherheitsrelevante Aktionen werden mit Akteur, Zeitpunkt und kleinem Kontext protokolliert: An- und Abmeldung, 2FA-, Passwort-, Passkey- und API-Token-Änderungen, Admin-Änderungen an Nutzern, Domains, IP-Regeln und Einstellungen sowie jedes Anlegen, Ändern und Löschen von Links. Im Admin-Bereich filterbar und per Aufbewahrung bereinigt.
 - Oberfläche auf Deutsch und Englisch, hell/dunkel, mobil nutzbar, eigenes Logo und Akzentfarbe
   (Standard: Simpsons-Gelb `#fed90f`; Schrift- und Textfarben werden für Kontrast nach WCAG berechnet,
   das Favicon übernimmt die Farbe).

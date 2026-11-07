@@ -531,3 +531,48 @@ tag.renamed: Tag umbenannt.
 tag.deleted: Tag gelöscht.
 tag.name_invalid: Bitte einen Tag-Namen mit 1–64 Zeichen angeben.
 tag.name_taken: Diesen Tag gibt es schon.
+# --- Audit-Log (Paket 2) ---
+nav.audit: Audit-Log
+audit.intro: 'Wer wann was geändert hat. Die Einträge lassen sich nach Aktion, Akteur und Zeitraum filtern.'
+audit.count: '%count% Einträge'
+audit.empty_title: Keine Einträge
+audit.empty: 'Für die gewählten Filter gibt es keine Protokolleinträge.'
+audit.anonymous: anonym
+audit.filter.action: Aktion
+audit.filter.all_actions: Alle Aktionen
+audit.filter.actor: Akteur
+audit.filter.from: Von
+audit.filter.to: Bis
+audit.filter.reset: Filter zurücksetzen
+audit.col.time: Zeitpunkt
+audit.col.action: Aktion
+audit.col.actor: Akteur
+audit.col.target: Objekt
+audit.col.ip: IP
+audit.col.context: Kontext
+audit.action.auth.login: Anmeldung
+audit.action.auth.login_failed: Fehlgeschlagene Anmeldung
+audit.action.auth.logout: Abmeldung
+audit.action.auth.2fa_enabled: Zwei-Faktor aktiviert
+audit.action.auth.2fa_disabled: Zwei-Faktor deaktiviert
+audit.action.auth.backup_codes_regenerated: Backup-Codes neu erzeugt
+audit.action.auth.password_changed: Passwort geändert
+audit.action.auth.password_reset: Passwort zurückgesetzt
+audit.action.auth.passkey_added: Passkey hinzugefügt
+audit.action.auth.passkey_removed: Passkey entfernt
+audit.action.token.created: API-Token erstellt
+audit.action.token.revoked: API-Token widerrufen
+audit.action.user.created: Nutzer angelegt
+audit.action.user.roles_changed: Rollen geändert
+audit.action.user.activated: Nutzer aktiviert
+audit.action.user.deactivated: Nutzer deaktiviert
+audit.action.user.deleted: Nutzer gelöscht
+audit.action.domain.created: Domain angelegt
+audit.action.domain.updated: Domain geändert
+audit.action.domain.deleted: Domain gelöscht
+audit.action.ip_rule.added: IP-Regel hinzugefügt
+audit.action.ip_rule.deleted: IP-Regel gelöscht
+audit.action.settings.changed: Einstellungen geändert
+audit.action.link.created: Link angelegt
+audit.action.link.updated: Link geändert
+audit.action.link.deleted: Link gelöscht
