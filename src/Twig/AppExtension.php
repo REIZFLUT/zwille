@@ -6,8 +6,10 @@ namespace App\Twig;
 
 use App\Branding\AccentPalette;
 use App\Domain\HostRegistry;
+use App\Entity\Link;
 use App\Entity\User;
 use App\EventListener\SecurityHeadersListener;
+use App\Link\LinkAvailability;
 use App\Security\AdminAccess;
 use App\Settings\Settings;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -26,6 +28,7 @@ final readonly class AppExtension
         private HostRegistry $hosts,
         private AdminAccess $adminAccess,
         private Security $security,
+        private LinkAvailability $availability,
     ) {
     }
 
@@ -56,6 +59,17 @@ final readonly class AppExtension
     public function appTitle(): string
     {
         return $this->settings->getString(Settings::TITLE);
+    }
+
+    /**
+     * The link's current status ("live", "inactive", "scheduled", "exhausted" or "expired"),
+     * decided by the one service that also governs the redirect - the list chip and the
+     * status filter therefore never disagree with it.
+     */
+    #[AsTwigFunction('link_status')]
+    public function linkStatus(Link $link): string
+    {
+        return $this->availability->status($link);
     }
 
     /** For e-mails, which can't use the CSS tokens: accent background and the text colour for it. */

@@ -16,9 +16,8 @@
         <div>
             <h1>{{ link.title ?? (link.domain.displayName ~ '/' ~ link.code) }}</h1>
             <p class="sub">
-                {% if link.live %}<span class="badge badge-success">{{ 'link.live'|trans }}</span>{% endif %}
-                {% if not link.active %}<span class="badge badge-warning">{{ 'link.inactive'|trans }}</span>{% endif %}
-                {% if link.expired %}<span class="badge badge-danger">{{ 'link.expired'|trans }}</span>{% endif %}
+                {% set status = link_status(link) %}
+                <span class="badge badge-{{ status == 'live' ? 'success' : (status == 'inactive' ? 'warning' : (status == 'scheduled' ? 'accent' : 'danger')) }}">{{ ('links.status.' ~ status)|trans }}</span>
                 {% if not link.domain.active %}<span class="badge badge-danger">{{ 'domain.inactive'|trans }}</span>{% endif %}
             </p>
         </div>
@@ -76,8 +75,16 @@
                     {% endif %}
                     <dt>{{ 'link.redirect_type'|trans }}</dt>
                     <dd>{{ ('link.redirect.' ~ link.redirectType)|trans }}</dd>
+                    <dt>{{ 'link.starts_at'|trans }}</dt>
+                    <dd>{{ link.startsAt ? link.startsAt|date('d.m.Y H:i') : '–' }}</dd>
                     <dt>{{ 'link.expires_at'|trans }}</dt>
                     <dd>{{ link.expiresAt ? link.expiresAt|date('d.m.Y H:i') : '–' }}</dd>
+                    <dt>{{ 'link.max_clicks'|trans }}</dt>
+                    <dd>{{ link.maxClicks ? link.maxClicks|number_format(0, ',', '.') : ('link.max_clicks_unlimited'|trans) }}</dd>
+                    {% if link.fallbackUrl %}
+                        <dt>{{ 'link.fallback_url'|trans }}</dt>
+                        <dd><a href="{{ link.fallbackUrl }}" rel="noopener noreferrer" target="_blank">{{ link.fallbackUrl }}</a></dd>
+                    {% endif %}
                     <dt>{{ 'links.col.owner'|trans }}</dt>
                     <dd>{{ link.owner.displayName }}</dd>
                     <dt>{{ 'links.col.created'|trans }}</dt>

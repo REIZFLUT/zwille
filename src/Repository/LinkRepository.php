@@ -69,11 +69,11 @@ class LinkRepository extends ServiceEntityRepository
      * so callers that pass no sort (API, dashboard) keep the previous behaviour. A stable id
      * tie-breaker keeps pagination deterministic when the primary sort key ties.
      *
-     * The status filter mirrors Link::isLive() and Link::isExpired(); unknown values mean "all".
+     * The status filter mirrors LinkAvailability::reason(); unknown values mean "all".
      *
      * @param string      $sort   one of created, clicks, last_click, target, code
      * @param string      $dir    asc or desc
-     * @param string|null $status live, inactive, expired or null for all
+     * @param string|null $status live, inactive, scheduled, exhausted, expired or null for all
      * @param Tag|null    $tag    restrict to links carrying this tag (owner's own tag)
      */
     public function searchQuery(User $user, ?string $search = null, ?Domain $domain = null, bool $onlyOwn = true, string $sort = 'created', string $dir = 'desc', ?string $status = null, ?Tag $tag = null): QueryBuilder
@@ -107,11 +107,26 @@ class LinkRepository extends ServiceEntityRepository
             )->setParameter('q', '%'.mb_strtolower(trim($search)).'%');
         }
         match ($status) {
-            'live' => $qb->andWhere('l.active = true AND d.active = true AND (l.expiresAt IS NULL OR l.expiresAt > :now)')
-                ->setParameter('now', new \DateTimeImmutable()),
+            // Each branch mirrors one rule of LinkAvailability::reason() in the same order. Only
+            // column comparisons and bound parameters, so the SQLite and MariaDB plans agree.
+            'live' => $qb->andWhere(
+                'l.active = true AND d.active = true'
+                .' AND (l.startsAt IS NULL OR l.startsAt <= :now)'
+                .' AND (l.maxClicks IS NULL OR l.clickCount < l.maxClicks)'
+                .' AND (l.expiresAt IS NULL OR l.expiresAt > :now)',
+            )->setParameter('now', new \DateTimeImmutable()),
             'inactive' => $qb->andWhere('l.active = false'),
-            'expired' => $qb->andWhere('l.expiresAt IS NOT NULL AND l.expiresAt <= :now')
+            'scheduled' => $qb->andWhere('l.active = true AND l.startsAt IS NOT NULL AND l.startsAt > :now')
                 ->setParameter('now', new \DateTimeImmutable()),
+            'exhausted' => $qb->andWhere(
+                'l.active = true AND l.maxClicks IS NOT NULL AND l.clickCount >= l.maxClicks'
+                .' AND (l.startsAt IS NULL OR l.startsAt <= :now)',
+            )->setParameter('now', new \DateTimeImmutable()),
+            'expired' => $qb->andWhere(
+                'l.active = true AND l.expiresAt IS NOT NULL AND l.expiresAt <= :now'
+                .' AND (l.startsAt IS NULL OR l.startsAt <= :now)'
+                .' AND (l.maxClicks IS NULL OR l.clickCount < l.maxClicks)',
+            )->setParameter('now', new \DateTimeImmutable()),
             default => null,
         };
 

@@ -284,7 +284,10 @@ final class LinkApiController extends AbstractController
             'title' => $link->getTitle(),
             'redirect_type' => $link->getRedirectType(),
             'active' => $link->isActive(),
+            'starts_at' => $link->getStartsAt()?->format(\DATE_ATOM),
             'expires_at' => $link->getExpiresAt()?->format(\DATE_ATOM),
+            'max_clicks' => $link->getMaxClicks(),
+            'fallback_url' => $link->getFallbackUrl(),
             'localisations' => (object) $link->getLocalisedTargets(),
             'tags' => array_values(array_map(static fn (Tag $tag): string => $tag->getName(), $link->getTags()->toArray())),
             'clicks' => $link->getClickCount(),
@@ -333,6 +336,37 @@ final class LinkApiController extends AbstractController
                 $link->setExpiresAt(null === $data['expires_at'] ? null : new \DateTimeImmutable((string) $data['expires_at']));
             } catch (\Exception) {
                 return $this->error('expires_at', 'Invalid date, use ISO 8601.');
+            }
+        }
+        if (\array_key_exists('starts_at', $data)) {
+            try {
+                $link->setStartsAt(null === $data['starts_at'] ? null : new \DateTimeImmutable((string) $data['starts_at']));
+            } catch (\Exception) {
+                return $this->error('starts_at', 'Invalid date, use ISO 8601.');
+            }
+        }
+        if (\array_key_exists('max_clicks', $data)) {
+            $maxClicks = $data['max_clicks'];
+            if (null === $maxClicks) {
+                $link->setMaxClicks(null);
+            } elseif (\is_int($maxClicks)) {
+                $link->setMaxClicks($maxClicks);
+            } elseif (\is_string($maxClicks) && ctype_digit($maxClicks)) {
+                $link->setMaxClicks((int) $maxClicks);
+            } else {
+                // Anything else (0, negative, bool, float, junk) fails the Positive constraint -> 422.
+                $link->setMaxClicks(0);
+            }
+        }
+        if (\array_key_exists('fallback_url', $data)) {
+            $fallbackUrl = $data['fallback_url'];
+            if (null === $fallbackUrl) {
+                $link->setFallbackUrl(null);
+            } elseif (\is_scalar($fallbackUrl)) {
+                // TargetUrl on the entity rejects anything that is not http(s).
+                $link->setFallbackUrl((string) $fallbackUrl);
+            } else {
+                return $this->error('fallback_url', 'Expected an http(s) URL.');
             }
         }
         if (\array_key_exists('localisations', $data)) {

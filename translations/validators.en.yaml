@@ -15,3 +15,5 @@ password.current_wrong: The current password is wrong.
 password.mismatch: The passwords do not match.
 tag.name.taken: This tag already exists.
 tag.name.blank: Please enter a tag name.
+link.max_clicks.min: The click limit must be at least 1.
+link.window.invalid: The start time must be before the expiry time.

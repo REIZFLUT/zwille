@@ -63,12 +63,29 @@ class Link
     #[ORM\Column]
     private bool $active = true;
 
+    /** null means immediately live; a future value schedules the link. */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $startsAt = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $expiresAt = null;
+
+    /**
+     * Where to send a visitor when the link cannot redirect right now (inactive, scheduled,
+     * exhausted or expired). http(s) only; null means the notice page is shown instead.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[TargetUrl]
+    private ?string $fallbackUrl = null;
 
     /** Human clicks (bots excluded), maintained by the ClickRecorder. */
     #[ORM\Column]
     private int $clickCount = 0;
+
+    /** null means unlimited; otherwise the link stops once clickCount reaches this value. */
+    #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: 'link.max_clicks.min')]
+    private ?int $maxClicks = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastClickAt = null;
@@ -160,6 +177,18 @@ class Link
         return $this;
     }
 
+    public function getFallbackUrl(): ?string
+    {
+        return $this->fallbackUrl;
+    }
+
+    public function setFallbackUrl(?string $fallbackUrl): static
+    {
+        $this->fallbackUrl = '' === trim((string) $fallbackUrl) ? null : trim((string) $fallbackUrl);
+
+        return $this;
+    }
+
     public function getNotes(): ?string
     {
         return $this->notes;
@@ -208,6 +237,18 @@ class Link
         return $this;
     }
 
+    public function getStartsAt(): ?\DateTimeImmutable
+    {
+        return $this->startsAt;
+    }
+
+    public function setStartsAt(?\DateTimeImmutable $startsAt): static
+    {
+        $this->startsAt = $startsAt;
+
+        return $this;
+    }
+
     public function getExpiresAt(): ?\DateTimeImmutable
     {
         return $this->expiresAt;
@@ -234,6 +275,18 @@ class Link
     public function getClickCount(): int
     {
         return $this->clickCount;
+    }
+
+    public function getMaxClicks(): ?int
+    {
+        return $this->maxClicks;
+    }
+
+    public function setMaxClicks(?int $maxClicks): static
+    {
+        $this->maxClicks = $maxClicks;
+
+        return $this;
     }
 
     public function getLastClickAt(): ?\DateTimeImmutable

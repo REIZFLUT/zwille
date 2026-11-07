@@ -15,3 +15,5 @@ password.current_wrong: Das aktuelle Passwort stimmt nicht.
 password.mismatch: Die Passwörter stimmen nicht überein.
 tag.name.taken: Diesen Tag gibt es schon.
 tag.name.blank: Bitte einen Tag-Namen angeben.
+link.max_clicks.min: Die Klickanzahl muss mindestens 1 betragen.
+link.window.invalid: Der Startzeitpunkt muss vor dem Ablaufzeitpunkt liegen.
