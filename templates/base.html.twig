@@ -39,6 +39,7 @@
                     {{ ui.nav_item(path('app_dashboard'), 'nav.dashboard'|trans, 'home', route == 'app_dashboard') }}
                     {{ ui.nav_item(path('app_links'), 'nav.links'|trans, 'link', route starts with 'app_link') }}
                     {{ ui.nav_item(path('app_tools_bookmarklet'), 'nav.tools'|trans, 'bookmark', route starts with 'app_tools') }}
+                    {{ ui.nav_item(path('app_tags'), 'nav.tags'|trans, 'tag', route starts with 'app_tag') }}
                 </div>
                 {% if is_admin() %}
                     <div class="nav-group">

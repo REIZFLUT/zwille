@@ -497,3 +497,37 @@ link.quick_submit: Shorten
 link.quick_open_form: Open in the form
 link.quick_cancel: Cancel
 flash.link_quick_created: 'Short link created: %url%'
+
+# --- Tags und Notizen (Paket 1) ---
+nav.tags: Tags
+link.tags: Tags
+link.tags_help: Group the link by campaign; several tags are possible.
+link.notes: Note (internal)
+link.notes_help: visible internally only
+links.manage_tags: Manage tags
+links.filter_tag: Filter by tag
+links.all_tags: All tags
+bulk.tag_add: Add tag
+bulk.tag_remove: Remove tag
+bulk.select_tag: Tag
+bulk.tag_invalid: Tag not found or not yours.
+tag.title: Tags
+tag.count: '{0} No tags|{1} 1 tag|]1,Inf[ %count% tags'
+tag.new: Create a new tag
+tag.name: Name
+tag.name_placeholder: e.g. Autumn campaign
+tag.create: Create
+tag.rename_aria: 'Rename tag %name%'
+tag.show_links: Show links with this tag
+tag.col.name: Tag
+tag.col.links: Links
+tag.col.clicks: Clicks
+tag.delete_note: 'Deleting a tag removes no links – only the assignment.'
+tag.delete_confirm: 'Delete the tag? The links stay.'
+tag.empty_title: No tags yet
+tag.empty: 'Create tags to group your links by campaign.'
+tag.created: Tag created.
+tag.renamed: Tag renamed.
+tag.deleted: Tag deleted.
+tag.name_invalid: Please enter a tag name with 1–64 characters.
+tag.name_taken: This tag already exists.

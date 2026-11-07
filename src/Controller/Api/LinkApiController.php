@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Entity\Domain;
 use App\Entity\Link;
 use App\Entity\LinkLocalisation;
+use App\Entity\Tag;
 use App\Entity\User;
 use App\Event\Api\ApiResponseEvent;
 use App\Link\LinkManager;
@@ -19,6 +20,7 @@ use App\Security\Voter\DomainVoter;
 use App\Security\Voter\LinkVoter;
 use App\Stats\Period;
 use App\Stats\StatsBuilder;
+use App\Tag\TagManager;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -52,6 +54,7 @@ final class LinkApiController extends AbstractController
         private readonly RateLimiterFactoryInterface $apiLimiter,
         private readonly AdminAccess $adminAccess,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly TagManager $tagManager,
     ) {
     }
 
@@ -283,6 +286,7 @@ final class LinkApiController extends AbstractController
             'active' => $link->isActive(),
             'expires_at' => $link->getExpiresAt()?->format(\DATE_ATOM),
             'localisations' => (object) $link->getLocalisedTargets(),
+            'tags' => array_values(array_map(static fn (Tag $tag): string => $tag->getName(), $link->getTags()->toArray())),
             'clicks' => $link->getClickCount(),
             'last_click_at' => $link->getLastClickAt()?->format(\DATE_ATOM),
             'owner' => $link->getOwner()->getEmail(),
@@ -294,6 +298,11 @@ final class LinkApiController extends AbstractController
     /** @param array<string, mixed> $data */
     private function apply(Link $link, array $data): ?JsonResponse
     {
+        // The internal note is never accepted through the API (and never returned).
+        if (\array_key_exists('notes', $data)) {
+            return $this->error('notes', 'Notes are internal and cannot be set through the API.');
+        }
+
         if (\array_key_exists('domain', $data)) {
             $domain = \is_int($data['domain']) ? $this->domains->find($data['domain']) : $this->domains->findOneByHostname((string) $data['domain']);
             if (null === $domain || !$this->isGranted(DomainVoter::USE, $domain)) {
@@ -336,6 +345,20 @@ final class LinkApiController extends AbstractController
             foreach ($data['localisations'] as $language => $url) {
                 $link->addLocalisation(new LinkLocalisation()->setLanguage((string) $language)->setTargetUrl(\is_string($url) ? $url : ''));
             }
+        }
+        if (\array_key_exists('tags', $data)) {
+            if (!\is_array($data['tags'])) {
+                return $this->error('tags', 'Expected an array of tag names.');
+            }
+            $names = [];
+            foreach ($data['tags'] as $name) {
+                if (!\is_string($name)) {
+                    return $this->error('tags', 'Tag names must be strings.');
+                }
+                $names[] = $name;
+            }
+            // Unknown names are created for the link's owner; the whole set replaces the current one.
+            $link->setTags($this->tagManager->resolve($link->getOwner(), $names));
         }
 
         return null;

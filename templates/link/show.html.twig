@@ -66,6 +66,14 @@
                         <dt>{{ localisation.language|language_name(app.request.locale) }} <span class="badge">{{ localisation.language }}</span></dt>
                         <dd><a href="{{ localisation.targetUrl }}" rel="noopener noreferrer" target="_blank">{{ localisation.targetUrl }}</a></dd>
                     {% endfor %}
+                    {% if link.tags|length > 0 %}
+                        <dt>{{ 'link.tags'|trans }}</dt>
+                        <dd>{% for tag in link.tags %}<a class="badge" href="{{ path('app_links', {tag: tag.id}) }}">{{ tag.name }}</a> {% endfor %}</dd>
+                    {% endif %}
+                    {% if link.notes %}
+                        <dt>{{ 'link.notes'|trans }}</dt>
+                        <dd>{{ link.notes|nl2br }}</dd>
+                    {% endif %}
                     <dt>{{ 'link.redirect_type'|trans }}</dt>
                     <dd>{{ ('link.redirect.' ~ link.redirectType)|trans }}</dd>
                     <dt>{{ 'link.expires_at'|trans }}</dt>

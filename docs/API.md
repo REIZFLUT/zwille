@@ -33,8 +33,12 @@ und Nutzer (`429` mit `Retry-After`).
 | `active` | bool | |
 | `expires_at` | string\|null | ISO 8601 |
 | `localisations` | object | `{"en": "https://…", "de-at": "https://…"}` – ersetzt alle bisherigen |
+| `tags` | string[] | Tag-Namen; ersetzt alle bisherigen. Unbekannte Namen werden für den Token-Inhaber angelegt |
 
-Antwort (`data`): zusätzlich `id`, `short_url`, `clicks`, `last_click_at`,
+`notes` (interne Notiz) wird **weder angenommen noch zurückgegeben** – ein Body mit `notes`
+antwortet mit `422` (`validation_failed`).
+
+Antwort (`data`): zusätzlich `id`, `short_url`, `tags`, `clicks`, `last_click_at`,
 `owner`, `created_at`, `updated_at`.
 
 ## Beispiele

@@ -47,6 +47,11 @@ class Link
     #[TargetUrl]
     private string $targetUrl = '';
 
+    /** Internal note: never serialised by the API and never shown on a redirect page. */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 2000)]
+    private ?string $notes = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $title = null;
@@ -75,6 +80,13 @@ class Link
     #[Assert\Unique(fields: ['language'], message: 'localisation.language.duplicate', normalizer: [self::class, 'localisationKey'])]
     private Collection $localisations;
 
+    /** @var Collection<int, Tag> */
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'links')]
+    #[ORM\JoinTable(name: 'link_tag')]
+    #[ORM\JoinColumn(name: 'link_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'tag_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private Collection $tags;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -85,6 +97,7 @@ class Link
     {
         $this->owner = $owner;
         $this->localisations = new ArrayCollection();
+        $this->tags = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = $this->createdAt;
     }
@@ -143,6 +156,18 @@ class Link
     public function setTargetUrl(?string $targetUrl): static
     {
         $this->targetUrl = trim((string) $targetUrl);
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): static
+    {
+        $this->notes = '' === trim((string) $notes) ? null : trim((string) $notes);
 
         return $this;
     }
@@ -264,6 +289,44 @@ class Link
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    /** @return Collection<int, Tag> */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): static
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): static
+    {
+        $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    /** @param iterable<Tag> $tags */
+    public function setTags(iterable $tags): static
+    {
+        $this->tags = new ArrayCollection();
+        foreach ($tags as $tag) {
+            $this->addTag($tag);
+        }
+
+        return $this;
+    }
+
+    public function hasTag(Tag $tag): bool
+    {
+        return $this->tags->contains($tag);
     }
 
     public function getUpdatedAt(): \DateTimeImmutable

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Domain;
 use App\Entity\Link;
+use App\Entity\Tag;
 use App\Entity\User;
 use App\Form\LinkType;
 use App\Link\LinkManager;
@@ -14,10 +15,12 @@ use App\Qr\QrCodeRenderer;
 use App\Repository\ClickRepository;
 use App\Repository\DomainRepository;
 use App\Repository\LinkRepository;
+use App\Repository\TagRepository;
 use App\Security\AdminAccess;
 use App\Security\Voter\LinkVoter;
 use App\Stats\Period;
 use App\Stats\StatsBuilder;
+use App\Tag\TagManager;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -52,12 +55,14 @@ final class LinkController extends AbstractController
     private const array STATUSES = ['live', 'inactive', 'expired'];
 
     /** @var list<string> whitelisted bulk actions */
-    private const array BULK_ACTIONS = ['activate', 'deactivate', 'delete', 'move'];
+    private const array BULK_ACTIONS = ['activate', 'deactivate', 'delete', 'move', 'tag_add', 'tag_remove'];
 
     public function __construct(
         private readonly LinkManager $manager,
         private readonly DomainRepository $domains,
         private readonly AdminAccess $adminAccess,
+        private readonly TagRepository $tags,
+        private readonly TagManager $tagManager,
     ) {
     }
 
@@ -77,8 +82,11 @@ final class LinkController extends AbstractController
         $dir = \in_array($dir, self::DIRECTIONS, true) ? $dir : 'desc';
         $status = (string) $request->query->get('status');
         $status = \in_array($status, self::STATUSES, true) ? $status : null;
+        // Only the user's own tags filter the list; an unknown or foreign id means "all".
+        $tagId = $request->query->getInt('tag');
+        $tag = $tagId > 0 ? $this->tags->findOwned($user, $tagId) : null;
 
-        $query = $links->searchQuery($user, $search, $domain, $onlyOwn, $sort, $dir, $status)
+        $query = $links->searchQuery($user, $search, $domain, $onlyOwn, $sort, $dir, $status, $tag)
             ->setFirstResult(($page - 1) * self::PER_PAGE)
             ->setMaxResults(self::PER_PAGE);
         $paginator = new Paginator($query, fetchJoinCollection: false);
@@ -90,6 +98,8 @@ final class LinkController extends AbstractController
             'pages' => max(1, (int) ceil(\count($paginator) / self::PER_PAGE)),
             'search' => $search,
             'domain' => $domain,
+            'tag' => $tag,
+            'tags' => $this->tags->findByOwner($user),
             'only_own' => $onlyOwn,
             'sort' => $sort,
             'dir' => $dir,
@@ -131,7 +141,7 @@ final class LinkController extends AbstractController
         // The dashboard quick form only posts target, domain and code; a full form would
         // read the missing "active" checkbox as unchecked.
         $full = !$request->isMethod('POST') || \array_key_exists('redirectType', $request->request->all('link'));
-        $form = $this->createForm(LinkType::class, $link, ['domains' => $usable, 'full' => $full]);
+        $form = $this->createForm(LinkType::class, $link, ['domains' => $usable, 'full' => $full, 'tags' => $this->tags->findByOwner($user)]);
 
         return $this->handleForm($request, $form, $link, 'link/new.html.twig', 'flash.link_created');
     }
@@ -244,6 +254,15 @@ final class LinkController extends AbstractController
                 return $this->redirectToRoute('app_links', $this->bulkFilters($request));
             }
             [$changed, $denied, $conflicts] = $this->moveLinks($ids, $target, $links);
+        } elseif ('tag_add' === $action || 'tag_remove' === $action) {
+            // Only the user's own tag can be applied; a foreign or unknown id changes nothing.
+            $tag = $this->tags->findOwned($user, $request->request->getInt('tag'));
+            if (null === $tag) {
+                $this->addFlash('warning', 'bulk.tag_invalid');
+
+                return $this->redirectToRoute('app_links', $this->bulkFilters($request));
+            }
+            [$changed, $denied, $conflicts] = $this->applyTagAction($ids, $tag, 'tag_add' === $action, $links);
         } else {
             [$changed, $denied, $conflicts] = $this->applyToLinks($ids, $action, $links);
         }
@@ -277,7 +296,15 @@ final class LinkController extends AbstractController
             // Keep the current domain selectable even if the assignment was revoked later.
             $usable[] = $link->getDomain();
         }
-        $form = $this->createForm(LinkType::class, $link, ['domains' => $usable]);
+        $tags = $this->tags->findByOwner($user);
+        foreach ($link->getTags() as $current) {
+            // Keep the link's existing tags selectable (e.g. an admin editing somebody else's
+            // link) so submitting the form does not silently detach them.
+            if (!\in_array($current, $tags, true)) {
+                $tags[] = $current;
+            }
+        }
+        $form = $this->createForm(LinkType::class, $link, ['domains' => $usable, 'tags' => $tags]);
 
         return $this->handleForm($request, $form, $link, 'link/edit.html.twig', 'flash.link_saved');
     }
@@ -446,12 +473,41 @@ final class LinkController extends AbstractController
         if (\in_array($status, self::STATUSES, true)) {
             $params['status'] = $status;
         }
+        $tag = (int) ($return['tag'] ?? 0);
+        if ($tag > 0) {
+            $params['tag'] = $tag;
+        }
         $page = (int) ($return['page'] ?? 1);
         if ($page > 1) {
             $params['page'] = $page;
         }
 
         return $params;
+    }
+
+    /**
+     * Adds or removes one tag on every permitted link. The ownership check stays authoritative
+     * (foreign or missing links are counted as denied, never touched) and the whole run issues
+     * a single flush - see TagManager::attach().
+     *
+     * @param list<int> $ids
+     *
+     * @return array{int, int, int} [changed, denied, conflicts]
+     */
+    private function applyTagAction(array $ids, Tag $tag, bool $add, LinkRepository $links): array
+    {
+        $permitted = [];
+        $denied = 0;
+        foreach ($ids as $id) {
+            $link = $links->find($id);
+            if (null === $link || !$this->isGranted(LinkVoter::MANAGE, $link)) {
+                ++$denied;
+                continue;
+            }
+            $permitted[] = $link;
+        }
+
+        return [$this->tagManager->attach($permitted, $tag, $add), $denied, 0];
     }
 
     /** The domain with that id if the user may use it (all active domains for admins), otherwise null. */

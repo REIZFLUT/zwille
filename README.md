@@ -35,6 +35,9 @@ its job.
   customary column names (`url`, `keyword`, `title`) are recognised, duplicates are skipped.
 - **Working list** – sort by clicks, last click, target or code; activate, deactivate, delete or move
   several links at once (only links you are allowed to change).
+- **Tags and internal notes** – group links into campaigns with any number of tags, filter the list
+  by tag and manage tags on their own page; every link can also carry a note for your own team that
+  is never exposed through the API or a redirect.
 - **Automatic page titles** – fetched from the target page when a link is created (switchable, with an
   SSRF guard so the server never calls private addresses).
 - QR codes (SVG/PNG), CSV export, expiry date, active toggle, 301/302/307/308.
