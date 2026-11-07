@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Audit\AuditLogger;
 use App\Entity\Domain;
 use App\Entity\Link;
 use App\Entity\Tag;
@@ -63,6 +64,7 @@ final class LinkController extends AbstractController
         private readonly AdminAccess $adminAccess,
         private readonly TagRepository $tags,
         private readonly TagManager $tagManager,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -263,6 +265,16 @@ final class LinkController extends AbstractController
                 return $this->redirectToRoute('app_links', $this->bulkFilters($request));
             }
             [$changed, $denied, $conflicts] = $this->applyTagAction($ids, $tag, 'tag_add' === $action, $links);
+            if ($changed > 0) {
+                // TagManager attaches/detaches in one flush and dispatches no link event, so the
+                // audit trail gets one entry for the batch instead of one per link.
+                $this->audit->record(
+                    AuditLogger::LINK_TAGS_CHANGED,
+                    ['tag' => $tag->getName(), 'added' => 'tag_add' === $action, 'count' => $changed],
+                    targetType: 'tag',
+                    targetId: $tag->getId(),
+                );
+            }
         } else {
             [$changed, $denied, $conflicts] = $this->applyToLinks($ids, $action, $links);
         }

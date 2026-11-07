@@ -7,6 +7,7 @@ namespace App\Tests\Functional;
 use App\Audit\AuditLogger;
 use App\Entity\AuditEntry;
 use App\Entity\Link;
+use App\Entity\Tag;
 use App\Entity\User;
 use App\Security\SecretBox;
 use OTPHP\TOTP;
@@ -113,6 +114,35 @@ final class AuditLogTest extends AppTestCase
         $this->client->request('POST', '/links/bulk', ['action' => 'delete', 'ids' => [(string) $first, (string) $second], '_token' => $token]);
 
         self::assertSame($before + 2, \count($this->entries(AuditLogger::LINK_DELETED)), 'one entry per deleted link');
+    }
+
+    public function testBulkTagChangeWritesOneEntryForTheBatch(): void
+    {
+        $user = $this->createUser('ada@example.com');
+        $domain = $this->createDomain('go.example.com', $user);
+        $first = $this->createLink($user, $domain, 'aa')->getId();
+        $second = $this->createLink($user, $domain, 'bb')->getId();
+
+        $tag = new Tag($user, 'Kampagne Herbst');
+        $this->em()->persist($tag);
+        $this->em()->flush();
+
+        $this->client->loginUser($user);
+        $token = $this->formToken('/links', '/links/bulk');
+        $this->client->request('POST', '/links/bulk', [
+            '_token' => $token,
+            'action' => 'tag_add',
+            'tag' => (string) $tag->getId(),
+            'ids' => [(string) $first, (string) $second],
+        ]);
+
+        // The bulk tag path writes through TagManager (one flush, no per-link event): the trail
+        // gets a single entry for the batch, carrying the tag and how many links it touched.
+        $entry = $this->lastEntry(AuditLogger::LINK_TAGS_CHANGED);
+        self::assertNotNull($entry, 'a bulk tag change is recorded');
+        self::assertSame('tag', $entry->getTargetType());
+        self::assertSame($tag->getId(), $entry->getTargetId());
+        self::assertSame(['tag' => 'Kampagne Herbst', 'added' => true, 'count' => 2], $entry->getContext());
     }
 
     public function testSecretishContextKeysAreDropped(): void

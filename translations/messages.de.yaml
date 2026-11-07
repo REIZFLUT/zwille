@@ -576,3 +576,4 @@ audit.action.settings.changed: Einstellungen geändert
 audit.action.link.created: Link angelegt
 audit.action.link.updated: Link geändert
 audit.action.link.deleted: Link gelöscht
+audit.action.link.tags_changed: Link-Tags geändert

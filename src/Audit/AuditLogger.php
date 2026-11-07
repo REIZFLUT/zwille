@@ -55,6 +55,13 @@ final readonly class AuditLogger
     public const string LINK_UPDATED = 'link.updated';
     public const string LINK_DELETED = 'link.deleted';
 
+    /**
+     * One entry for a whole bulk tag change. That path writes through TagManager (a single
+     * flush, no per-link event), so there is no LinkSavedEvent to hook - this is the one
+     * link mutation that carries its own action key.
+     */
+    public const string LINK_TAGS_CHANGED = 'link.tags_changed';
+
     /** Every action the app can produce; drives the filter select on the audit page. */
     public const array KNOWN_ACTIONS = [
         self::LOGIN,
