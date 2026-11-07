@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'nav.audit'|trans }}{% endblock %}
+
+{# Translates an action key, falling back to the raw key when no label is defined yet. #}
+{% macro action_label(action) %}
+    {%- set key = 'audit.action.' ~ action -%}
+    {%- set label = key|trans -%}
+    {{- label == key ? action : label -}}
+{% endmacro %}
+
+{% block content %}
+    {% import _self as audit %}
+
+    <div class="page-head">
+        <div>
+            <h1>{{ 'nav.audit'|trans }}</h1>
+            <p class="sub">{{ 'audit.intro'|trans }}</p>
+        </div>
+    </div>
+
+    <form class="filters" method="get" role="search">
+        <select name="action" data-autosubmit aria-label="{{ 'audit.filter.action'|trans }}">
+            <option value="">{{ 'audit.filter.all_actions'|trans }}</option>
+            {% for a in actions %}
+                <option value="{{ a }}" {{ action == a ? 'selected' }}>{{ audit.action_label(a) }}</option>
+            {% endfor %}
+        </select>
+        <div class="search-field">
+            <input type="search" name="actor" value="{{ actor }}" placeholder="{{ 'audit.filter.actor'|trans }}" aria-label="{{ 'audit.filter.actor'|trans }}">
+        </div>
+        <label class="check" for="from">
+            <span class="small muted">{{ 'audit.filter.from'|trans }}</span>
+            <input type="date" id="from" name="from" value="{{ from ? from|date('Y-m-d') : '' }}">
+        </label>
+        <label class="check" for="to">
+            <span class="small muted">{{ 'audit.filter.to'|trans }}</span>
+            <input type="date" id="to" name="to" value="{{ to ? to|date('Y-m-d') : '' }}">
+        </label>
+        <button type="submit" class="btn">{{ 'action.search'|trans }}</button>
+        {% if action or actor or from or to %}
+            <a class="btn btn-ghost btn-sm" href="{{ path('app_admin_audit') }}">{{ 'audit.filter.reset'|trans }}</a>
+        {% endif %}
+    </form>
+
+    <div class="result-line">
+        <span class="small muted">{{ 'audit.count'|trans({'%count%': total}) }}</span>
+    </div>
+
+    <div class="card flush">
+        {% if entries|length == 0 %}
+            <div class="empty">
+                <h2>{{ 'audit.empty_title'|trans }}</h2>
+                <p>{{ 'audit.empty'|trans }}</p>
+            </div>
+        {% else %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>{{ 'audit.col.time'|trans }}</th>
+                            <th>{{ 'audit.col.action'|trans }}</th>
+                            <th class="hide-sm">{{ 'audit.col.actor'|trans }}</th>
+                            <th class="hide-sm">{{ 'audit.col.target'|trans }}</th>
+                            <th class="hide-sm">{{ 'audit.col.ip'|trans }}</th>
+                            <th class="hide-sm">{{ 'audit.col.context'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <td class="small mono">{{ entry.occurredAt|date('d.m.Y H:i:s') }}</td>
+                                <td><span class="badge">{{ audit.action_label(entry.action) }}</span></td>
+                                <td class="hide-sm small">
+                                    {% if entry.actorLabel %}{{ entry.actorLabel }}{% else %}<span class="muted">{{ 'audit.anonymous'|trans }}</span>{% endif %}
+                                    {% if entry.actorId %}<span class="muted">#{{ entry.actorId }}</span>{% endif %}
+                                </td>
+                                <td class="hide-sm small">
+                                    {% if entry.targetType %}{{ entry.targetType }}{% if entry.targetId %} #{{ entry.targetId }}{% endif %}{% else %}–{% endif %}
+                                </td>
+                                <td class="hide-sm small mono">{{ entry.ip ?? '–' }}</td>
+                                <td class="hide-sm small">
+                                    {% if entry.context is empty %}–{% else %}<code class="mono small">{{ entry.context|json_encode }}</code>{% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    {{ include('_partials/pagination.html.twig') }}
+{% endblock %}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Audit\AuditLogger;
 use App\Form\SettingsType;
 use App\Settings\Settings;
 use App\Tracking\GeoIpLookup;
@@ -17,6 +18,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ADMIN_ACCESS')]
 final class SettingsController extends AbstractController
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     #[Route('/admin/settings', name: 'app_admin_settings', methods: ['GET', 'POST'])]
     public function __invoke(Request $request, Settings $settings, GeoIpLookup $geoIp): Response
     {
@@ -50,7 +55,17 @@ final class SettingsController extends AbstractController
             } elseif (null !== $data['logo']) {
                 $values[Settings::LOGO] = \sprintf('data:%s;base64,%s', $data['logo']->getMimeType(), base64_encode((string) file_get_contents($data['logo']->getPathname())));
             }
+            // Snapshot the current values first: save() overwrites them, and a change is
+            // recorded as old -> new (secret-like settings only as "changed", never the value).
+            $before = [];
+            foreach (array_keys(Settings::DEFAULTS) as $key) {
+                $before[$key] = $settings->get($key);
+            }
             $settings->save($values);
+            $changes = self::changes($values, $before);
+            if ([] !== $changes) {
+                $this->audit->record(AuditLogger::SETTINGS_CHANGED, ['changes' => $changes], targetType: 'setting');
+            }
             $this->addFlash('success', 'flash.settings_saved');
 
             return $this->redirectToRoute('app_admin_settings');
@@ -60,5 +75,32 @@ final class SettingsController extends AbstractController
             'form' => $form,
             'geoip_available' => $geoIp->isAvailable(),
         ], new Response(status: $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+    }
+
+    /**
+     * The "what changed" payload: each changed key with old -> new, except keys that carry a
+     * secret (password, token, ... and the logo blob) - those only record that they changed,
+     * never the value itself.
+     *
+     * @param array<string, mixed>   $values values about to be saved
+     * @param array<string, ?string> $before snapshot taken before the save
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private static function changes(array $values, array $before): array
+    {
+        $changes = [];
+        foreach ($values as $key => $value) {
+            $normalized = \is_bool($value) ? ($value ? '1' : '0') : (null === $value ? null : (string) $value);
+            $previous = $before[$key] ?? null;
+            if ($previous === $normalized) {
+                continue;
+            }
+            $changes[$key] = AuditLogger::isSensitiveKey($key)
+                ? ['changed' => true]
+                : ['from' => $previous, 'to' => $normalized];
+        }
+
+        return $changes;
     }
 }

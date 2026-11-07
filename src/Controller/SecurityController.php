@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Audit\AuditLogger;
 use App\Entity\ResetToken;
 use App\Form\ChangePasswordType;
 use App\Mail\AccountMailer;
@@ -22,6 +23,10 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 final class SecurityController extends AbstractController
 {
+    public function __construct(private readonly AuditLogger $audit)
+    {
+    }
+
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(Request $request, AuthenticationUtils $authenticationUtils): Response
     {
@@ -105,6 +110,7 @@ final class SecurityController extends AbstractController
             $user->setPassword($hasher->hashPassword($user, (string) $form->get('plainPassword')->getData()));
             $tokens->removeAllFor($user);
             $em->flush();
+            $this->audit->record(AuditLogger::PASSWORD_RESET, ['purpose' => $resetToken->getPurpose()], actor: $user, targetType: 'user', targetId: $user->getId());
             $this->addFlash('success', ResetToken::PURPOSE_INVITE === $resetToken->getPurpose() ? 'flash.invite_done' : 'flash.reset_done');
 
             return $this->redirectToRoute('app_login');

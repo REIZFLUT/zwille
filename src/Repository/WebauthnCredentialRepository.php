@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Audit\AuditLogger;
 use App\Entity\User;
 use App\Entity\WebauthnCredential;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -22,7 +23,7 @@ use Webauthn\PublicKeyCredentialUserEntity;
  */
 class WebauthnCredentialRepository extends ServiceEntityRepository implements CredentialRecordRepositoryInterface, CanSaveCredentialRecord
 {
-    public function __construct(ManagerRegistry $registry, private readonly UserRepository $users)
+    public function __construct(ManagerRegistry $registry, private readonly UserRepository $users, private readonly AuditLogger $audit)
     {
         parent::__construct($registry, WebauthnCredential::class);
     }
@@ -61,6 +62,9 @@ class WebauthnCredentialRepository extends ServiceEntityRepository implements Cr
         );
         $this->getEntityManager()->persist($credential);
         $this->getEntityManager()->flush();
+        // A new passkey has no event of its own in the WebAuthn bundle, so this real
+        // persistence point is where the registration is recorded.
+        $this->audit->record(AuditLogger::PASSKEY_ADDED, ['name' => $credential->getName()], actor: $user, targetType: 'user', targetId: $user->getId());
     }
 
     /** @return list<WebauthnCredential> */

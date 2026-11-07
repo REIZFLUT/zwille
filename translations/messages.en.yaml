@@ -497,3 +497,49 @@ link.quick_submit: Shorten
 link.quick_open_form: Open in the form
 link.quick_cancel: Cancel
 flash.link_quick_created: 'Short link created: %url%'
+
+# --- Audit-Log (Paket 2) ---
+nav.audit: Audit log
+audit.intro: 'Who changed what and when. Filter the entries by action, actor and date range.'
+audit.count: '%count% entries'
+audit.empty_title: No entries
+audit.empty: 'No audit entries match the selected filters.'
+audit.anonymous: anonymous
+audit.filter.action: Action
+audit.filter.all_actions: All actions
+audit.filter.actor: Actor
+audit.filter.from: From
+audit.filter.to: To
+audit.filter.reset: Reset filters
+audit.col.time: Time
+audit.col.action: Action
+audit.col.actor: Actor
+audit.col.target: Target
+audit.col.ip: IP
+audit.col.context: Context
+audit.action.auth.login: Sign-in
+audit.action.auth.login_failed: Failed sign-in
+audit.action.auth.logout: Sign-out
+audit.action.auth.2fa_enabled: Two-factor enabled
+audit.action.auth.2fa_disabled: Two-factor disabled
+audit.action.auth.backup_codes_regenerated: Backup codes regenerated
+audit.action.auth.password_changed: Password changed
+audit.action.auth.password_reset: Password reset
+audit.action.auth.passkey_added: Passkey added
+audit.action.auth.passkey_removed: Passkey removed
+audit.action.token.created: API token created
+audit.action.token.revoked: API token revoked
+audit.action.user.created: User created
+audit.action.user.roles_changed: Roles changed
+audit.action.user.activated: User activated
+audit.action.user.deactivated: User deactivated
+audit.action.user.deleted: User deleted
+audit.action.domain.created: Domain created
+audit.action.domain.updated: Domain updated
+audit.action.domain.deleted: Domain deleted
+audit.action.ip_rule.added: IP rule added
+audit.action.ip_rule.deleted: IP rule deleted
+audit.action.settings.changed: Settings changed
+audit.action.link.created: Link created
+audit.action.link.updated: Link updated
+audit.action.link.deleted: Link deleted
