@@ -43,6 +43,8 @@ its job.
 - **Time window and click limit** – schedule a link to start at a future time, cap the number of clicks
   (or leave it unlimited) and send visitors of an unavailable link to a fallback URL instead of a notice
   page.
+- **Password-protected links and device targets** – gate a link behind a password (the target is never
+  revealed before unlocking) and send iOS, Android or desktop visitors to different targets.
 - QR codes (SVG/PNG), CSV export, expiry date, active toggle, 301/302/307/308.
 - **REST API** with personal tokens ([docs/API.md](docs/API.md)).
 - **Plugins** – typed events instead of patched core files: rewrite redirect targets, veto

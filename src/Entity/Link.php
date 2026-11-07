@@ -78,6 +78,13 @@ class Link
     #[TargetUrl]
     private ?string $fallbackUrl = null;
 
+    /**
+     * bcrypt hash of the unlock password; null means the link is public. Never serialised,
+     * never written to the log or the audit context - only password_verify sees it.
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $passwordHash = null;
+
     /** Human clicks (bots excluded), maintained by the ClickRecorder. */
     #[ORM\Column]
     private int $clickCount = 0;
@@ -97,6 +104,13 @@ class Link
     #[Assert\Unique(fields: ['language'], message: 'localisation.language.duplicate', normalizer: [self::class, 'localisationKey'])]
     private Collection $localisations;
 
+    /** @var Collection<int, LinkDeviceTarget> */
+    #[ORM\OneToMany(targetEntity: LinkDeviceTarget::class, mappedBy: 'link', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['device' => \SortDirection::Ascending])]
+    #[Assert\Valid]
+    #[Assert\Unique(fields: ['device'], message: 'device_targets.duplicate', normalizer: [self::class, 'deviceTargetKey'])]
+    private Collection $deviceTargets;
+
     /** @var Collection<int, Tag> */
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'links')]
     #[ORM\JoinTable(name: 'link_tag')]
@@ -114,6 +128,7 @@ class Link
     {
         $this->owner = $owner;
         $this->localisations = new ArrayCollection();
+        $this->deviceTargets = new ArrayCollection();
         $this->tags = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = $this->createdAt;
@@ -185,6 +200,32 @@ class Link
     public function setFallbackUrl(?string $fallbackUrl): static
     {
         $this->fallbackUrl = '' === trim((string) $fallbackUrl) ? null : trim((string) $fallbackUrl);
+
+        return $this;
+    }
+
+    public function hasPassword(): bool
+    {
+        return null !== $this->passwordHash && '' !== $this->passwordHash;
+    }
+
+    /** Only the unlock gate and the password check read this; it is deliberately never serialised. */
+    public function getPasswordHash(): ?string
+    {
+        return $this->passwordHash;
+    }
+
+    public function setPasswordHash(?string $passwordHash): static
+    {
+        $this->passwordHash = null === $passwordHash || '' === $passwordHash ? null : $passwordHash;
+
+        return $this;
+    }
+
+    /** Removes the password protection; the link becomes publicly reachable again. */
+    public function clearPassword(): static
+    {
+        $this->passwordHash = null;
 
         return $this;
     }
@@ -337,6 +378,78 @@ class Link
     public static function localisationKey(LinkLocalisation $localisation): array
     {
         return ['language' => $localisation->getLanguage()];
+    }
+
+    /** @return Collection<int, LinkDeviceTarget> */
+    public function getDeviceTargets(): Collection
+    {
+        return $this->deviceTargets;
+    }
+
+    public function addDeviceTarget(LinkDeviceTarget $deviceTarget): static
+    {
+        if (!$this->deviceTargets->contains($deviceTarget)) {
+            $this->deviceTargets->add($deviceTarget);
+            $deviceTarget->setLink($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeviceTarget(LinkDeviceTarget $deviceTarget): static
+    {
+        $this->deviceTargets->removeElement($deviceTarget);
+
+        return $this;
+    }
+
+    /**
+     * Replaces the whole set of device targets.
+     *
+     * @param iterable<LinkDeviceTarget> $deviceTargets
+     */
+    public function setDeviceTargets(iterable $deviceTargets): static
+    {
+        $this->deviceTargets = new ArrayCollection();
+        foreach ($deviceTargets as $deviceTarget) {
+            $this->addDeviceTarget($deviceTarget);
+        }
+
+        return $this;
+    }
+
+    /** Target for one device key (ios, android, desktop), or null when none is set. */
+    public function getDeviceTarget(string $device): ?string
+    {
+        foreach ($this->deviceTargets as $deviceTarget) {
+            if ($deviceTarget->getDevice() === $device) {
+                return $deviceTarget->getTargetUrl();
+            }
+        }
+
+        return null;
+    }
+
+    /** @return array<string, string> device key => target url, for the resolver and the API */
+    public function getDeviceTargetsMap(): array
+    {
+        $targets = [];
+        foreach ($this->deviceTargets as $deviceTarget) {
+            $targets[$deviceTarget->getDevice()] = $deviceTarget->getTargetUrl();
+        }
+
+        return $targets;
+    }
+
+    /**
+     * Normaliser for the Assert\Unique constraint (see localisationKey): reduce each row to
+     * the field the uniqueness check looks at.
+     *
+     * @return array{device: string}
+     */
+    public static function deviceTargetKey(LinkDeviceTarget $deviceTarget): array
+    {
+        return ['device' => $deviceTarget->getDevice()];
     }
 
     public function getCreatedAt(): \DateTimeImmutable

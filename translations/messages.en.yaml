@@ -589,3 +589,24 @@ link.fallback_url: Fallback URL
 link.fallback_url_help: Where visitors are sent when the link is not active (scheduled, expired, disabled or clicks exhausted). http(s) only.
 redirect.exhausted.title: Click limit reached
 redirect.exhausted.text: This short link has reached its maximum number of clicks.
+
+# --- Passwort und Geraete (Paket 4) ---
+link.password: Password protection
+link.password_help: 'Leave empty to keep the link public or the current password unchanged. With a password, visitors first see a form; the target is only revealed after the correct entry.'
+link.password_set: 'A password is set for this link. A new password replaces it; tick the box to remove it.'
+link.remove_password: Remove password protection
+device_targets.label: Device targets
+device_targets.help: 'One target per device. Without an entry the language or default address applies; bots and unknown devices get the desktop target.'
+device_targets.add: Add device target
+device_targets.device: Device
+device_targets.target_url: Target URL
+device_targets.ios: iOS / iPadOS
+device_targets.android: Android
+device_targets.desktop: Desktop / other
+redirect.password.title: Password-protected
+redirect.password.text: 'This short link is protected by a password. Please enter it to reach the target.'
+redirect.password.label: Password
+redirect.password.submit: Continue
+redirect.password.wrong: 'The password is not correct. Please try again.'
+redirect.password.throttled_title: Too many attempts
+redirect.password.throttled_text: 'Please wait a moment and try again later.'

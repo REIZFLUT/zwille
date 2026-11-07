@@ -9,6 +9,7 @@ use App\Event\Link\LinkDeletedEvent;
 use App\Event\Link\LinkPersistingEvent;
 use App\Event\Link\LinkSavedEvent;
 use App\Settings\Settings;
+use App\Validator\LinkPassword;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -49,6 +50,20 @@ final readonly class LinkManager
         $this->prepare($link);
 
         return $this->validator->validate($link);
+    }
+
+    /**
+     * Applies the same length rules to a plain unlock password that the form's field uses, so
+     * the API rejects a too-short or too-long password with the identical message. Returns the
+     * (translated) message of the first violation, or null when the password is acceptable.
+     */
+    public function passwordError(string $plain): ?string
+    {
+        foreach ($this->validator->validate($plain, new LinkPassword()) as $violation) {
+            return (string) $violation->getMessage();
+        }
+
+        return null;
     }
 
     /**

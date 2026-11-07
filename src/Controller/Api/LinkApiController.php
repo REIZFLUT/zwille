@@ -6,11 +6,13 @@ namespace App\Controller\Api;
 
 use App\Entity\Domain;
 use App\Entity\Link;
+use App\Entity\LinkDeviceTarget;
 use App\Entity\LinkLocalisation;
 use App\Entity\Tag;
 use App\Entity\User;
 use App\Event\Api\ApiResponseEvent;
 use App\Link\LinkManager;
+use App\Link\LinkPassword;
 use App\Link\LinkRejectedException;
 use App\Repository\ClickRepository;
 use App\Repository\DomainRepository;
@@ -55,6 +57,7 @@ final class LinkApiController extends AbstractController
         private readonly AdminAccess $adminAccess,
         private readonly EventDispatcherInterface $dispatcher,
         private readonly TagManager $tagManager,
+        private readonly LinkPassword $passwords,
     ) {
     }
 
@@ -289,6 +292,8 @@ final class LinkApiController extends AbstractController
             'max_clicks' => $link->getMaxClicks(),
             'fallback_url' => $link->getFallbackUrl(),
             'localisations' => (object) $link->getLocalisedTargets(),
+            'password_protected' => $link->hasPassword(),
+            'device_targets' => (object) $link->getDeviceTargetsMap(),
             'tags' => array_values(array_map(static fn (Tag $tag): string => $tag->getName(), $link->getTags()->toArray())),
             'clicks' => $link->getClickCount(),
             'last_click_at' => $link->getLastClickAt()?->format(\DATE_ATOM),
@@ -393,6 +398,54 @@ final class LinkApiController extends AbstractController
             }
             // Unknown names are created for the link's owner; the whole set replaces the current one.
             $link->setTags($this->tagManager->resolve($link->getOwner(), $names));
+        }
+        if (\array_key_exists('password', $data)) {
+            $password = $data['password'];
+            if (null === $password) {
+                // null (or absent): leave the current protection unchanged - mirrors the web form's
+                // empty field. An empty string is the explicit "remove the password".
+            } elseif (!\is_string($password)) {
+                return $this->error('password', 'Expected a string or null.');
+            } elseif ('' === $password) {
+                $link->clearPassword();
+            } else {
+                $passwordError = $this->manager->passwordError($password);
+                if (null !== $passwordError) {
+                    return $this->error('password', $passwordError);
+                }
+                $link->setPasswordHash($this->passwords->hash($password));
+            }
+        }
+        if (\array_key_exists('device_targets', $data)) {
+            if (!\is_array($data['device_targets'])) {
+                return $this->error('device_targets', 'Expected an array like [{"device": "ios", "url": "https://…"}].');
+            }
+            /** @var array<string, string> $targets */
+            $targets = [];
+            foreach ($data['device_targets'] as $entry) {
+                if (!\is_array($entry) || !isset($entry['device'], $entry['url'])) {
+                    return $this->error('device_targets', 'Each entry needs "device" and "url".');
+                }
+                $device = $entry['device'];
+                if (!\is_string($device) || !\in_array($device, LinkDeviceTarget::DEVICES, true)) {
+                    return $this->error('device_targets', 'Device must be one of: ios, android, desktop.');
+                }
+                if (!\is_string($entry['url'])) {
+                    return $this->error('device_targets', 'The url must be a string.');
+                }
+                if (isset($targets[$device])) {
+                    return $this->error('device_targets', 'Each device may only be given once.');
+                }
+                $targets[$device] = $entry['url'];
+            }
+            // The submitted set replaces the stored one; a non-http url is caught by the entity's
+            // TargetUrl constraint below and reported as 422.
+            foreach ($link->getDeviceTargets()->toArray() as $existing) {
+                $link->removeDeviceTarget($existing);
+            }
+            foreach ($targets as $device => $url) {
+                $link->addDeviceTarget(new LinkDeviceTarget()->setDevice($device)->setTargetUrl($url));
+            }
         }
 
         return null;
