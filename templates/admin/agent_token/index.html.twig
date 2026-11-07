@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'nav.agent_tokens'|trans }}{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>{{ 'nav.agent_tokens'|trans }}</h1>
+            <p class="sub">{{ 'agent.admin_intro'|trans }}</p>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <p>
+                {% if agent_access %}
+                    <span class="badge badge-success">{{ 'agent.access_on'|trans }}</span>
+                {% else %}
+                    <span class="badge badge-danger">{{ 'agent.access_off'|trans }}</span>
+                {% endif %}
+                <span class="small muted">{{ 'agent.kill_switch_hint'|trans }}</span>
+                <a href="{{ path('app_admin_settings') }}">{{ 'nav.settings'|trans }}</a>
+            </p>
+            <form method="post" action="{{ path('app_admin_agent_tokens_revoke_all') }}" data-confirm="{{ 'agent.revoke_all_confirm'|trans }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('agent-tokens-revoke-all') }}">
+                <button class="btn btn-danger">{{ 'agent.revoke_all'|trans }}</button>
+            </form>
+        </div>
+
+        <div class="card flush">
+            {% if tokens is empty %}
+                <div class="empty"><p>{{ 'agent.none'|trans }}</p></div>
+            {% else %}
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr>
+                            <th>{{ 'api.token_name'|trans }}</th>
+                            <th>{{ 'agent.owner'|trans }}</th>
+                            <th>{{ 'agent.scopes'|trans }}</th>
+                            <th class="hide-sm">{{ 'passkey.last_used'|trans }}</th>
+                            <th class="hide-sm">{{ 'api.token_expires'|trans }}</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody>
+                            {% for token in tokens %}
+                                <tr>
+                                    <td>
+                                        {{ token.name }}
+                                        <div class="mono small muted">{{ token.hint }}…</div>
+                                    </td>
+                                    <td class="small">{{ token.user.displayName }}<div class="muted">{{ token.user.email }}</div></td>
+                                    <td class="small">
+                                        {{ token.scopes|join(', ') }}
+                                        {% if token.restrictsDomains %}<div class="muted">{{ token.domains|map(d => d.hostname)|join(', ') }}</div>{% endif %}
+                                        {% if token.targetHosts is not empty %}<div class="muted">{{ 'agent.targets_short'|trans }}: {{ token.targetHosts|join(', ') }}</div>{% endif %}
+                                        {% if token.allowedIps is not empty %}<div class="muted">{{ 'agent.ips_short'|trans }}: {{ token.allowedIps|join(', ') }}</div>{% endif %}
+                                    </td>
+                                    <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|date('d.m.Y H:i') : '–' }}</td>
+                                    <td class="hide-sm small">
+                                        <span class="{{ token.expired ? 'badge badge-danger' }}">{{ token.expiresAt ? token.expiresAt|date('d.m.Y') : '–' }}</span>
+                                    </td>
+                                    <td>
+                                        {% if token.revoked %}
+                                            <span class="badge badge-danger">{{ 'agent.revoked'|trans }}</span>
+                                        {% else %}
+                                            <form method="post" action="{{ path('app_admin_agent_token_revoke', {id: token.id}) }}" class="inline-form" data-confirm="{{ 'api.delete_confirm'|trans }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('agent-token-revoke-' ~ token.id) }}">
+                                                <button class="btn btn-sm btn-danger">{{ 'action.revoke'|trans }}</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

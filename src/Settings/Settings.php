@@ -25,6 +25,8 @@ final class Settings implements ResetInterface
     public const string LINK_FETCH_TITLE = 'links.fetch_title';
     public const string TRACKING = 'tracking.enabled';
     public const string TRACK_COUNTRY = 'tracking.country';
+    /** Kill switch: while off, every agent token is refused. */
+    public const string AGENT_ACCESS = 'api.agent_access';
 
     public const array DEFAULTS = [
         self::TITLE => 'EatMyShort.Link',
@@ -37,6 +39,7 @@ final class Settings implements ResetInterface
         self::LINK_FETCH_TITLE => '1',
         self::TRACKING => '1',
         self::TRACK_COUNTRY => '1',
+        self::AGENT_ACCESS => '1',
     ];
 
     private const string CACHE_KEY = 'app_settings_v2';

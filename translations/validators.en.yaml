@@ -13,3 +13,8 @@ localisation.language.invalid: Use a language code like "en" or "de-at".
 localisation.language.duplicate: Each language may only be given once.
 password.current_wrong: The current password is wrong.
 password.mismatch: The passwords do not match.
+url.not_allowed_for_token: '"{{ host }}" is not an allowed target for this token.'
+agent.scopes_required: Choose at least one permission.
+agent.too_many_entries: 'At most %max% entries.'
+agent.invalid_host: '"%value%" is not a valid host name.'
+agent.invalid_ip: '"%value%" is not a valid IP address or CIDR range.'

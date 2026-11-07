@@ -39,6 +39,10 @@ Aufgabe erledigt.
   Server nie private Adressen aufruft).
 - QR-Codes (SVG/PNG), CSV-Export, Ablaufdatum, Aktiv-Schalter, 301/302/307/308.
 - **REST-API** mit persönlichen Tokens ([docs/API.md](docs/API.md)).
+- **KI-Agent-Tokens** – für KI-Agenten und andere Automatisierung: nie Admin-Rechte, laufen
+  immer ab, nur die gewählten Rechte (lesen, schreiben, löschen, Statistik), optional auf
+  Domains, Ziel-Hosts und Absender-Adressen begrenzt, mit eigenem Schreibbudget,
+  Admin-Übersicht und Notschalter.
 - **Plugins** – typisierte Events statt Eingriffen in den Kern: Weiterleitungsziele umschreiben,
   Klicks ablehnen, Links mit sichtbarer Meldung zurückweisen, API-Antworten und Admin-Oberfläche
   erweitern ([docs/EXTENDING.md](docs/EXTENDING.md)).
@@ -76,6 +80,9 @@ Sicherheit und Datenschutz sind hier Architekturentscheidungen, keine nachträgl
   vorher eine erneute Bestätigung.
 - **Admin-Bereich** über IP-Freigabeliste (IPv4/IPv6, CIDR) **und** einen Voter auf jedem
   Admin-Controller abgesichert; unbekannte Hosts erreichen die App-Routen gar nicht erst.
+- **KI-Agenten nur mit dem Nötigsten**: Ein Agent-Token hat nie Admin-Rechte, egal wem es
+  gehört; jede API-Aktion nennt das Recht, das sie braucht (Aktionen ohne Angabe sind für
+  Agenten gesperrt), und ein Schalter in den Einstellungen sperrt alle Agenten auf einmal.
 - **Datenschutz als Voreinstellung**: keine vollständigen IP-Adressen (IPv4 `/24`, IPv6 `/48`),
   keine externen Analyse- oder Geodienste – Besucherdaten verlassen den Server nicht.
 - **Jede Abfrage ist parametrisiert** über Doctrine/DBAL (kein zusammengebautes SQL), Twig
@@ -123,6 +130,7 @@ php bin/console app:domain:add go.firma.de --default
 | `app:db:backup [ziel]` | konsistente Datenbanksicherung: `VACUUM INTO` für SQLite, `mariadb-dump`/`mysqldump` für MySQL/MariaDB |
 | `app:plugin:list` | freigeschaltete Plugins und ob sie geladen sind |
 | `app:plugin:validate` | Whitelist und alle Plugin-Verzeichnisse prüfen (Exit 1 bei Fehlern) |
+| `app:token:revoke [id] [--all-agents]` | API-Token widerrufen oder alle KI-Agent-Tokens auf einmal; ohne Argumente Liste der Agent-Tokens |
 
 ## Entwicklung
 

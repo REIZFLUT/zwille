@@ -24,6 +24,7 @@ nav.stats: Statistics
 nav.ip_rules: IP lock
 nav.settings: Settings
 nav.import: Import
+nav.agent_tokens: AI agents
 nav.profile: Profile
 nav.logout: Sign out
 nav.group_links: Links
@@ -261,7 +262,7 @@ profile.confirm_no_factor: This account has no password and no two-factor code t
 profile.confirm_passkey_hint: This account signs in with a passkey. Sign in with the passkey once more – security-relevant actions are then unlocked for five minutes.
 profile.confirm_passkey_button: Confirm with passkey
 
-api.intro: Personal access tokens for the REST API. A token acts with your permissions.
+api.intro: Access tokens for the REST API. A personal token acts with your permissions, an AI agent token only with the permissions you give it.
 api.new_token: New token
 api.token_name: Name
 api.token_name_placeholder: e.g. CRM integration
@@ -275,6 +276,41 @@ api.token: Token
 api.delete_confirm: Revoke token? Applications using it lose access.
 api.example: Example
 api.docs_hint: 'Endpoints: GET/POST /api/v1/links, GET/PATCH/DELETE /api/v1/links/{id}, GET /api/v1/links/{id}/stats, GET /api/v1/domains. Details in docs/API.md.'
+
+agent.new_token: New AI agent token
+agent.intro: 'For AI agents and other automation. An agent token never acts with admin rights, only on your own links and the domains assigned to you, always expires and may only do what you tick here.'
+agent.name_placeholder: e.g. marketing assistant
+agent.days_7: 7 days
+agent.days_30: 30 days
+agent.days_90: 90 days
+agent.scopes: Permissions
+'agent.scope.domains:read': Read domains
+'agent.scope.links:read': Read links
+'agent.scope.links:write': Create and change links
+'agent.scope.links:delete': Delete links
+'agent.scope.stats:read': Read statistics
+agent.domains: Only on these domains
+agent.domains_help: Nothing ticked = every domain assigned to you. When limited, there are no account-wide statistics, only those of single links.
+agent.target_hosts: Allowed target hosts
+agent.target_hosts_help: 'One host per line; subdomains are included. Empty = any target.'
+agent.allowed_ips: Allowed client addresses
+agent.allowed_ips_help: 'IP addresses or CIDR ranges, one per line. Empty = from anywhere.'
+agent.create: Create agent token
+agent.kind: Kind
+agent.kind_agent: AI agent
+agent.kind_personal: personal
+agent.revoked: revoked
+agent.targets_short: Targets
+agent.ips_short: Addresses
+agent.remove_confirm: Delete this revoked token for good?
+agent.admin_intro: Every AI agent token of every user. Agent tokens never act with admin rights.
+agent.access_on: AI agents allowed
+agent.access_off: AI agents blocked
+agent.kill_switch_hint: 'The kill switch that blocks every agent token at once is in the'
+agent.revoke_all: Revoke all agent tokens
+agent.revoke_all_confirm: Revoke every AI agent token of every user? This cannot be undone.
+agent.none: No AI agent tokens yet.
+agent.owner: User
 
 users.intro: Users only see their own links and may only use the domains assigned to them. Admins see everything.
 users.new: Add user
@@ -409,6 +445,8 @@ settings.geoip_missing: No GeoIP database configured – countries stay empty.
 settings.security: Security
 settings.require_2fa_admins: Require a second factor for admins
 settings.require_2fa_admins_help: Admins without passkey and without TOTP are sent to the setup after signing in.
+settings.agent_access: Allow AI agents
+settings.agent_access_help: Kill switch. When off, every AI agent token is refused at once; personal tokens keep working.
 
 redirect.unknown_domain.title: Unknown address
 redirect.unknown_domain.text: No short links are set up at %host%.
@@ -455,6 +493,8 @@ flash.profile_saved: Profile saved.
 flash.sensitive_confirmed: Confirmed. Security changes are possible for the next 5 minutes.
 flash.settings_saved: Settings saved.
 flash.token_deleted: Token revoked.
+flash.agent_tokens_revoked: All AI agent tokens revoked.
+flash.agent_tokens_none: There was no active AI agent token.
 flash.totp_disabled: Two-factor code turned off.
 flash.totp_enabled: Two-factor code active. Keep the backup codes safe.
 flash.user_2fa_reset: Two-factor code reset.

@@ -3,9 +3,10 @@
 Basis-URL: `https://<admin-host>/api/v1` · Format: JSON · Authentifizierung:
 persönliches Token aus **Profil → API** als `Authorization: Bearer emsl_…`.
 
-Ein Token handelt mit den Rechten seines Nutzers: eigene Links (Admins: alle),
-nur freigegebene Domains (Admins: alle aktiven). Limit: 120 Anfragen pro Minute
-und Nutzer (`429` mit `Retry-After`).
+Ein persönliches Token handelt mit den Rechten seines Nutzers: eigene Links (Admins:
+alle), nur freigegebene Domains (Admins: alle aktiven). Limit: 120 Anfragen pro Minute
+und Nutzer (`429` mit `Retry-After`). Für KI-Agenten gibt es eigene, eingeschränkte
+Tokens, siehe [KI-Agent-Tokens](#ki-agent-tokens).
 
 ## Endpunkte
 
@@ -94,3 +95,48 @@ Fehler: `400` bei einem `days`-Wert außerhalb der Liste.
 - `404` – unbekannter Link/Code oder unbekannte bzw. inaktive Domain
 - `400` – Body ist kein JSON-Objekt oder ein Parameter hat einen ungültigen Wert
 - `422` – Validierung: `{"error": "validation_failed", "violations": [{"field": "code", "message": "…"}]}`
+
+## KI-Agent-Tokens
+
+Für KI-Agenten (z. B. Claude Code) und andere Automatisierung gibt es unter **Profil → API**
+eigene Tokens mit dem Präfix `emsa_`. Sie benutzen dieselben Endpunkte, dürfen aber weniger:
+
+- **Nie Admin-Rechte**, auch wenn das Token einem Admin gehört: nur eigene Links und die dem
+  Nutzer freigegebenen Domains, die Gesamtstatistik nur über eigene Links.
+- **Laufen immer ab**: nach 7, 30 oder 90 Tagen.
+- **Nur die gewählten Rechte (Scopes)**. Fehlt eines, antwortet die API mit
+  `403 {"error": "scope_missing", "required_scope": "…"}`.
+
+| Scope | Endpunkte |
+|---|---|
+| `domains:read` | `GET /domains` |
+| `links:read` | `GET /links`, `GET /links/{id}`, `GET /expand` |
+| `links:write` | `POST /links`, `PATCH /links/{id}` |
+| `links:delete` | `DELETE /links/{id}` |
+| `stats:read` | `GET /links/{id}/stats`, `GET /stats` |
+
+Voreingestellt sind nur die lesenden Scopes. Neue Endpunkte ohne Scope-Angabe sind für
+Agent-Tokens gesperrt.
+
+Optionale Grenzen beim Anlegen:
+
+- **Domains**: Das Token sieht und ändert nur Links auf diesen Domains. Die Gesamtstatistik
+  (`/stats`) gibt es dann nicht (`403 scope_restricted`), nur die Statistik einzelner Links.
+- **Ziel-Hosts**: Ziele (auch sprachabhängige) müssen auf einem dieser Hosts oder einer
+  Subdomain davon liegen, sonst `422` mit Feld `target_url` bzw. `localisations`.
+- **Absender-Adressen**: IP-Adressen oder CIDR-Bereiche, von denen das Token benutzt werden
+  darf. Von anderswo antwortet die API mit `401`.
+
+**Schreibbudget pro Agent-Token**, zusätzlich zum Limit pro Nutzer: 30 schreibende Anfragen
+pro Minute und 300 pro Tag, davon höchstens 20 Löschungen pro Tag. Darüber antwortet die API
+mit `429 {"error": "rate_limited"}` und `Retry-After`.
+
+**Widerrufen**: im Profil (das Token bleibt als „widerrufen“ sichtbar), für Admins unter
+**Administration → KI-Agenten** (einzeln oder alle) oder in der Konsole mit
+`php bin/console app:token:revoke <id>` bzw. `--all-agents`. Der **Notschalter** „KI-Agenten
+zulassen“ unter **Administration → Einstellungen** sperrt alle Agent-Tokens sofort, ohne sie
+zu widerrufen. Persönliche Tokens sind davon nicht betroffen.
+
+Ein abgelaufenes, widerrufenes oder gesperrtes Token und ein Aufruf von einer nicht
+freigegebenen Adresse ergeben alle dieselbe Antwort `401`, damit ein fremdes Token nicht
+verrät, welche Grenze gegriffen hat.

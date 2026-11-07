@@ -15,6 +15,9 @@ use App\Repository\ClickRepository;
 use App\Repository\DomainRepository;
 use App\Repository\LinkRepository;
 use App\Security\AdminAccess;
+use App\Security\ApiScope;
+use App\Security\Attribute\RequiresScope;
+use App\Security\CurrentApiToken;
 use App\Security\Voter\DomainVoter;
 use App\Security\Voter\LinkVoter;
 use App\Stats\Period;
@@ -52,10 +55,12 @@ final class LinkApiController extends AbstractController
         private readonly RateLimiterFactoryInterface $apiLimiter,
         private readonly AdminAccess $adminAccess,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly CurrentApiToken $apiToken,
     ) {
     }
 
     #[Route('/domains', name: 'api_domains', methods: ['GET'])]
+    #[RequiresScope(ApiScope::DOMAINS_READ)]
     public function domains(Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $this->throttle($user);
@@ -64,18 +69,22 @@ final class LinkApiController extends AbstractController
             'id' => $d->getId(),
             'hostname' => $d->getHostname(),
             'default' => $d->isDefault(),
-        ], $this->domains->findUsableBy($user, $this->adminAccess->isAdmin($user)))]);
+        ], $this->usableDomains($user))]);
     }
 
     #[Route('/links', name: 'api_links', methods: ['GET'])]
+    #[RequiresScope(ApiScope::LINKS_READ)]
     public function list(Request $request, #[CurrentUser] User $user, LinkRepository $links): JsonResponse
     {
         $this->throttle($user);
         $page = max(1, $request->query->getInt('page', 1));
         $domainId = $request->query->getInt('domain');
-        $query = $links->searchQuery($user, $request->query->getString('q'), $domainId > 0 ? $this->domains->find($domainId) : null, !$this->adminAccess->isAdmin($user))
-            ->setFirstResult(($page - 1) * self::PER_PAGE)
-            ->setMaxResults(self::PER_PAGE);
+        $query = $links->searchQuery($user, $request->query->getString('q'), $domainId > 0 ? $this->domains->find($domainId) : null, !$this->adminAccess->isAdmin($user));
+        $token = $this->apiToken->get();
+        if (null !== $token && $token->restrictsDomains()) {
+            $query->andWhere('l.domain IN (:tokenDomains)')->setParameter('tokenDomains', $token->getDomains()->toArray());
+        }
+        $query->setFirstResult(($page - 1) * self::PER_PAGE)->setMaxResults(self::PER_PAGE);
         $paginator = new Paginator($query, fetchJoinCollection: false);
 
         return $this->ok('links.list', $request, [
@@ -85,6 +94,7 @@ final class LinkApiController extends AbstractController
     }
 
     #[Route('/links', name: 'api_link_create', methods: ['POST'])]
+    #[RequiresScope(ApiScope::LINKS_WRITE)]
     public function create(Request $request, #[CurrentUser] User $user): JsonResponse
     {
         $this->throttle($user);
@@ -92,8 +102,7 @@ final class LinkApiController extends AbstractController
         $link = new Link($user);
         $this->manager->applyDefaults($link);
 
-        $usable = $this->domains->findUsableBy($user, $this->adminAccess->isAdmin($user));
-        $link->setDomain($usable[0] ?? null);
+        $link->setDomain($this->usableDomains($user)[0] ?? null);
         $error = $this->apply($link, $data);
         if (null !== $error) {
             return $error;
@@ -113,6 +122,7 @@ final class LinkApiController extends AbstractController
     }
 
     #[Route('/links/{id}', name: 'api_link_show', requirements: ['id' => Requirement::DIGITS], methods: ['GET'])]
+    #[RequiresScope(ApiScope::LINKS_READ)]
     #[IsGranted(LinkVoter::MANAGE, 'link')]
     public function show(Request $request, Link $link, #[CurrentUser] User $user): JsonResponse
     {
@@ -122,6 +132,7 @@ final class LinkApiController extends AbstractController
     }
 
     #[Route('/links/{id}', name: 'api_link_update', requirements: ['id' => Requirement::DIGITS], methods: ['PATCH'])]
+    #[RequiresScope(ApiScope::LINKS_WRITE)]
     #[IsGranted(LinkVoter::MANAGE, 'link')]
     public function update(Request $request, Link $link, #[CurrentUser] User $user): JsonResponse
     {
@@ -144,6 +155,7 @@ final class LinkApiController extends AbstractController
     }
 
     #[Route('/links/{id}', name: 'api_link_delete', requirements: ['id' => Requirement::DIGITS], methods: ['DELETE'])]
+    #[RequiresScope(ApiScope::LINKS_DELETE)]
     #[IsGranted(LinkVoter::MANAGE, 'link')]
     public function delete(Link $link, #[CurrentUser] User $user): Response
     {
@@ -154,6 +166,7 @@ final class LinkApiController extends AbstractController
     }
 
     #[Route('/links/{id}/stats', name: 'api_link_stats', requirements: ['id' => Requirement::DIGITS], methods: ['GET'])]
+    #[RequiresScope(ApiScope::STATS_READ)]
     #[IsGranted(LinkVoter::MANAGE, 'link')]
     public function stats(Request $request, Link $link, #[CurrentUser] User $user, StatsBuilder $stats): JsonResponse
     {
@@ -180,6 +193,7 @@ final class LinkApiController extends AbstractController
      * click and never redirects; permissions match reading a link (owner or admin).
      */
     #[Route('/expand', name: 'api_expand', methods: ['GET'])]
+    #[RequiresScope(ApiScope::LINKS_READ)]
     public function expand(Request $request, #[CurrentUser] User $user, LinkRepository $links): JsonResponse
     {
         $this->throttle($user);
@@ -203,7 +217,7 @@ final class LinkApiController extends AbstractController
             $domain = '' !== $domainHost ? $this->domains->findOneByHostname($domainHost) : null;
             if (null === $domain && '' === $domainHost) {
                 // No domain given: the user's default domain (first of the usable ones).
-                $domain = $this->domains->findUsableBy($user, $this->adminAccess->isAdmin($user))[0] ?? null;
+                $domain = $this->usableDomains($user)[0] ?? null;
             }
         }
 
@@ -233,9 +247,17 @@ final class LinkApiController extends AbstractController
      * N days, plus the most clicked links of the same period and scope.
      */
     #[Route('/stats', name: 'api_stats', methods: ['GET'])]
+    #[RequiresScope(ApiScope::STATS_READ)]
     public function globalStats(Request $request, #[CurrentUser] User $user, StatsBuilder $stats, ClickRepository $clicks): JsonResponse
     {
         $this->throttle($user);
+        if (true === $this->apiToken->get()?->restrictsDomains()) {
+            // Account-wide figures would include links on domains the token must not see.
+            return $this->json([
+                'error' => 'scope_restricted',
+                'message' => 'Account-wide statistics are not available to a token limited to certain domains; use /links/{id}/stats.',
+            ], Response::HTTP_FORBIDDEN);
+        }
 
         $days = $request->query->getInt('days', 30);
         if (!\in_array($days, Period::CHOICES, true)) {
@@ -369,6 +391,20 @@ final class LinkApiController extends AbstractController
         } catch (\Throwable) {
             throw new BadRequestHttpException('Request body must be a JSON object.');
         }
+    }
+
+    /**
+     * Domains the caller may create links on: the user's (all active ones for admins),
+     * narrowed to the token's domains if it is limited to some.
+     *
+     * @return list<Domain>
+     */
+    private function usableDomains(User $user): array
+    {
+        $usable = $this->domains->findUsableBy($user, $this->adminAccess->isAdmin($user));
+        $token = $this->apiToken->get();
+
+        return null === $token ? $usable : array_values(array_filter($usable, $token->allowsDomain(...)));
     }
 
     private function throttle(User $user): void
