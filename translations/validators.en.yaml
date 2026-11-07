@@ -13,3 +13,5 @@ localisation.language.invalid: Use a language code like "en" or "de-at".
 localisation.language.duplicate: Each language may only be given once.
 password.current_wrong: The current password is wrong.
 password.mismatch: The passwords do not match.
+tag.name.taken: This tag already exists.
+tag.name.blank: Please enter a tag name.

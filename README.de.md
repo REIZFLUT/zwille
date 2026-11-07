@@ -35,6 +35,9 @@ Aufgabe erledigt.
   Dubletten übersprungen.
 - **Arbeitsliste** – nach Klicks, letztem Klick, Ziel oder Kürzel sortieren; mehrere Links auf einmal
   aktivieren, deaktivieren, löschen oder verschieben (nur Links, die man ändern darf).
+- **Tags und interne Notizen** – Links nach Kampagnen mit beliebig vielen Tags gruppieren, die Liste
+  nach Tag filtern und Tags auf einer eigenen Seite verwalten; jeder Link kann eine Notiz fürs eigene
+  Team tragen, die nie über die API oder eine Weiterleitung sichtbar wird.
 - **Automatische Seitentitel** – beim Anlegen vom Ziel abgeholt (abschaltbar, mit SSRF-Schutz, damit der
   Server nie private Adressen aufruft).
 - QR-Codes (SVG/PNG), CSV-Export, Ablaufdatum, Aktiv-Schalter, 301/302/307/308.

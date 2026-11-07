@@ -497,3 +497,37 @@ link.quick_submit: Kürzen
 link.quick_open_form: Im Formular öffnen
 link.quick_cancel: Abbrechen
 flash.link_quick_created: 'Kurzlink erstellt: %url%'
+
+# --- Tags und Notizen (Paket 1) ---
+nav.tags: Tags
+link.tags: Tags
+link.tags_help: Gruppiere den Link nach Kampagnen; mehrere Tags möglich.
+link.notes: Notiz (intern)
+link.notes_help: nur intern sichtbar
+links.manage_tags: Tags verwalten
+links.filter_tag: Nach Tag filtern
+links.all_tags: Alle Tags
+bulk.tag_add: Tag hinzufügen
+bulk.tag_remove: Tag entfernen
+bulk.select_tag: Tag
+bulk.tag_invalid: Tag nicht gefunden oder gehört dir nicht.
+tag.title: Tags
+tag.count: '{0} Keine Tags|{1} 1 Tag|]1,Inf[ %count% Tags'
+tag.new: Neuen Tag anlegen
+tag.name: Name
+tag.name_placeholder: z. B. Kampagne Herbst
+tag.create: Anlegen
+tag.rename_aria: 'Tag %name% umbenennen'
+tag.show_links: Links mit diesem Tag anzeigen
+tag.col.name: Tag
+tag.col.links: Links
+tag.col.clicks: Klicks
+tag.delete_note: 'Einen Tag zu löschen entfernt keine Links – nur die Zuordnung.'
+tag.delete_confirm: 'Tag löschen? Die Links bleiben erhalten.'
+tag.empty_title: Noch keine Tags
+tag.empty: 'Lege Tags an, um deine Links nach Kampagnen zu gruppieren.'
+tag.created: Tag angelegt.
+tag.renamed: Tag umbenannt.
+tag.deleted: Tag gelöscht.
+tag.name_invalid: Bitte einen Tag-Namen mit 1–64 Zeichen angeben.
+tag.name_taken: Diesen Tag gibt es schon.

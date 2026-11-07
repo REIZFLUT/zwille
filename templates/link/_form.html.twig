@@ -15,6 +15,12 @@
                 {% if form.title is defined %}
                     {{ form_row(form.title) }}
                 {% endif %}
+                {% if form.tags is defined %}
+                    {{ form_row(form.tags) }}
+                {% endif %}
+                {% if form.notes is defined %}
+                    {{ form_row(form.notes) }}
+                {% endif %}
             </div>
 
             {% if form.localisations is defined %}

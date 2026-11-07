@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% import '_macros.html.twig' as ui %}
+
+{% block title %}{{ 'tag.title'|trans }}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ ui.breadcrumbs([
+        {label: 'nav.links'|trans, url: path('app_links')},
+        {label: 'tag.title'|trans},
+    ]) }}
+{% endblock %}
+
+{% block content %}
+    <div class="page-head">
+        <div>
+            <h1>{{ 'tag.title'|trans }}</h1>
+            <p class="sub">{{ 'tag.count'|trans({'%count%': tags|length}) }}</p>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h2>{{ 'tag.new'|trans }}</h2>
+            <form method="post" action="{{ path('app_tag_new') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('tag-new') }}">
+                <div class="form-row">
+                    <div class="field">
+                        <label for="tag-new-name">{{ 'tag.name'|trans }}</label>
+                        <input type="text" id="tag-new-name" name="name" maxlength="64" required autofocus
+                               placeholder="{{ 'tag.name_placeholder'|trans }}" autocomplete="off">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ ui.icon('plus') }}{{ 'tag.create'|trans }}</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card flush">
+            {% if tags|length == 0 %}
+                <div class="empty">
+                    <h2>{{ 'tag.empty_title'|trans }}</h2>
+                    <p>{{ 'tag.empty'|trans }}</p>
+                </div>
+            {% else %}
+                <p class="hint small muted card-pad">{{ 'tag.delete_note'|trans }}</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ 'tag.col.name'|trans }}</th>
+                                <th class="num">{{ 'tag.col.links'|trans }}</th>
+                                <th class="num">{{ 'tag.col.clicks'|trans }}</th>
+                                <th><span class="sr-only">{{ 'links.col.actions'|trans }}</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tag in tags %}
+                                {% set total = totals[tag.id]|default({links: 0, clicks: 0}) %}
+                                <tr>
+                                    <td>
+                                        <form method="post" action="{{ path('app_tag_rename', {id: tag.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('tag-rename-' ~ tag.id) }}">
+                                            <div class="actions">
+                                                <input type="text" name="name" value="{{ tag.name }}" maxlength="64" required
+                                                       aria-label="{{ 'tag.rename_aria'|trans({'%name%': tag.name}) }}">
+                                                <button type="submit" class="btn btn-sm btn-ghost btn-icon" title="{{ 'action.save'|trans }}">{{ ui.icon('check') }}</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="num"><a href="{{ path('app_links', {tag: tag.id}) }}">{{ total.links }}</a></td>
+                                    <td class="num">{{ total.clicks|number_format(0, ',', '.') }}</td>
+                                    <td class="nowrap">
+                                        <div class="row-actions">
+                                            <a class="btn btn-sm btn-ghost btn-icon" href="{{ path('app_links', {tag: tag.id}) }}" title="{{ 'tag.show_links'|trans }}">{{ ui.icon('link') }}</a>
+                                            <form method="post" action="{{ path('app_tag_delete', {id: tag.id}) }}" class="inline-form">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('tag-delete-' ~ tag.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-ghost btn-icon btn-danger" data-confirm="{{ 'tag.delete_confirm'|trans }}" title="{{ 'action.delete'|trans }}">{{ ui.icon('x') }}</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

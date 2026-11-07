@@ -9,15 +9,19 @@
     {% set query = {} %}
     {% if search %}{% set query = query|merge({q: search}) %}{% endif %}
     {% if domain %}{% set query = query|merge({domain: domain.id}) %}{% endif %}
+    {% if tag %}{% set query = query|merge({tag: tag.id}) %}{% endif %}
     {% if only_own and is_admin() %}{% set query = query|merge({mine: 1}) %}{% endif %}
     {% if status %}{% set query = query|merge({status: status}) %}{% endif %}
     {% set sort_query = sort != 'created' or dir != 'desc' ? {sort: sort, dir: dir} : {} %}
-    {% set filtered = search or domain or status %}
+    {% set filtered = search or domain or status or tag %}
 
     <div class="page-head">
         <div>
             <h1>{{ 'nav.links'|trans }}</h1>
             <p class="sub">{{ 'links.count'|trans({'%count%': total}) }}</p>
+        </div>
+        <div class="actions">
+            <a class="btn btn-sm" href="{{ path('app_tags') }}">{{ ui.icon('tag') }}{{ 'links.manage_tags'|trans }}</a>
         </div>
     </div>
 
@@ -33,6 +37,14 @@
                 <option value="">{{ 'links.all_domains'|trans }}</option>
                 {% for d in domains %}
                     <option value="{{ d.id }}" {{ domain and domain.id == d.id ? 'selected' }}>{{ d.displayName }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        {% if tags|length > 0 %}
+            <select name="tag" data-autosubmit aria-label="{{ 'links.filter_tag'|trans }}">
+                <option value="">{{ 'links.all_tags'|trans }}</option>
+                {% for t in tags %}
+                    <option value="{{ t.id }}" {{ tag and tag.id == t.id ? 'selected' }}>{{ t.name }}</option>
                 {% endfor %}
             </select>
         {% endif %}
@@ -86,6 +98,7 @@
             <input type="hidden" name="return[domain]" value="{{ domain ? domain.id : '' }}">
             {% if is_admin() %}<input type="hidden" name="return[mine]" value="{{ only_own ? '1' : '' }}">{% endif %}
             <input type="hidden" name="return[status]" value="{{ status }}">
+            <input type="hidden" name="return[tag]" value="{{ tag ? tag.id : '' }}">
             <input type="hidden" name="return[sort]" value="{{ sort }}">
             <input type="hidden" name="return[dir]" value="{{ dir }}">
             {% if page > 1 %}<input type="hidden" name="return[page]" value="{{ page }}">{% endif %}
@@ -98,6 +111,13 @@
                     {% for d in move_domains %}<option value="{{ d.id }}">{{ d.displayName }}</option>{% endfor %}
                 </select>
                 <button type="submit" class="btn btn-sm" name="action" value="move">{{ 'bulk.move'|trans }}</button>
+            {% endif %}
+            {% if tags|length > 0 %}
+                <select name="tag" aria-label="{{ 'bulk.select_tag'|trans }}">
+                    {% for t in tags %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm" name="action" value="tag_add">{{ 'bulk.tag_add'|trans }}</button>
+                <button type="submit" class="btn btn-sm" name="action" value="tag_remove">{{ 'bulk.tag_remove'|trans }}</button>
             {% endif %}
             <button type="submit" class="btn btn-sm btn-danger" name="action" value="delete" data-confirm="{{ 'bulk.delete_confirm'|trans }}">{{ 'bulk.delete'|trans }}</button>
             <span class="spacer"></span>

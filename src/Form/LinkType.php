@@ -6,6 +6,7 @@ namespace App\Form;
 
 use App\Entity\Domain;
 use App\Entity\Link;
+use App\Entity\Tag;
 use App\Link\LinkManager;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -13,6 +14,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -55,6 +57,21 @@ final class LinkType extends AbstractType
         if ($options['full']) {
             $builder
                 ->add('title', TextType::class, ['label' => 'link.title', 'required' => false])
+                ->add('tags', EntityType::class, [
+                    'label' => 'link.tags',
+                    'class' => Tag::class,
+                    'choices' => $options['tags'],
+                    'choice_label' => 'name',
+                    'required' => false,
+                    'multiple' => true,
+                    'help' => 'link.tags_help',
+                ])
+                ->add('notes', TextareaType::class, [
+                    'label' => 'link.notes',
+                    'required' => false,
+                    'help' => 'link.notes_help',
+                    'attr' => ['rows' => 3],
+                ])
                 ->add('redirectType', ChoiceType::class, [
                     'label' => 'link.redirect_type',
                     'choices' => [
@@ -100,9 +117,12 @@ final class LinkType extends AbstractType
             'data_class' => Link::class,
             'full' => true,
             'autofocus' => false,
+            // The current user's tags; the dashboard quick form passes none and shows no field.
+            'tags' => [],
         ]);
         $resolver->setRequired('domains');
         $resolver->setAllowedTypes('domains', 'array');
+        $resolver->setAllowedTypes('tags', 'array');
         $resolver->setAllowedTypes('full', 'bool');
         $resolver->setAllowedTypes('autofocus', 'bool');
     }

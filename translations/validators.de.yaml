@@ -13,3 +13,5 @@ localisation.language.invalid: Sprachcode wie „en“ oder „de-at“ angeben.
 localisation.language.duplicate: Jede Sprache darf nur einmal angegeben werden.
 password.current_wrong: Das aktuelle Passwort stimmt nicht.
 password.mismatch: Die Passwörter stimmen nicht überein.
+tag.name.taken: Diesen Tag gibt es schon.
+tag.name.blank: Bitte einen Tag-Namen angeben.

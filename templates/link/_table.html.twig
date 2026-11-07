@@ -54,6 +54,13 @@
                             {% if not link.active %}<span class="badge badge-warning">{{ 'link.inactive'|trans }}</span>{% endif %}
                             {% if link.expired %}<span class="badge badge-danger">{{ 'link.expired'|trans }}</span>{% endif %}
                             {% if link.localisations|length > 0 %}<span class="badge">{{ link.localisations|map(l => l.language)|join(' · ') }}</span>{% endif %}
+                            {% for tag in link.tags %}
+                                {% if bulk %}
+                                    <a class="badge" href="{{ path('app_links', query|merge({tag: tag.id})) }}">{{ tag.name }}</a>
+                                {% else %}
+                                    <span class="badge">{{ tag.name }}</span>
+                                {% endif %}
+                            {% endfor %}
                         </td>
                         {% if bulk %}<td class="hide-sm target-cell"><span class="truncate muted small" title="{{ link.targetUrl }}">{{ link.title ?? link.targetUrl }}</span>{% if link.title %}<span class="truncate muted small">{{ link.targetUrl }}</span>{% endif %}</td>{% endif %}
                         {% if show_owner %}<td class="hide-sm small nowrap">{{ link.owner.displayName }}</td>{% endif %}

@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Domain;
 use App\Entity\Link;
+use App\Entity\Tag;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
@@ -73,8 +74,9 @@ class LinkRepository extends ServiceEntityRepository
      * @param string      $sort   one of created, clicks, last_click, target, code
      * @param string      $dir    asc or desc
      * @param string|null $status live, inactive, expired or null for all
+     * @param Tag|null    $tag    restrict to links carrying this tag (owner's own tag)
      */
-    public function searchQuery(User $user, ?string $search = null, ?Domain $domain = null, bool $onlyOwn = true, string $sort = 'created', string $dir = 'desc', ?string $status = null): QueryBuilder
+    public function searchQuery(User $user, ?string $search = null, ?Domain $domain = null, bool $onlyOwn = true, string $sort = 'created', string $dir = 'desc', ?string $status = null, ?Tag $tag = null): QueryBuilder
     {
         $field = self::SORT_FIELDS[$sort] ?? self::SORT_FIELDS['created'];
         $direction = 'asc' === mb_strtolower($dir) ? \SortDirection::Ascending : \SortDirection::Descending;
@@ -92,9 +94,17 @@ class LinkRepository extends ServiceEntityRepository
         if (null !== $domain) {
             $qb->andWhere('l.domain = :domain')->setParameter('domain', $domain);
         }
+        if (null !== $tag) {
+            $qb->andWhere(':tag MEMBER OF l.tags')->setParameter('tag', $tag);
+        }
         if (null !== $search && '' !== trim($search)) {
-            $qb->andWhere('LOWER(l.code) LIKE :q OR LOWER(l.targetUrl) LIKE :q OR LOWER(l.title) LIKE :q')
-                ->setParameter('q', '%'.mb_strtolower(trim($search)).'%');
+            // The internal note and the tag names are searchable too. LOWER()/LIKE behave
+            // identically on SQLite and MariaDB/MySQL; the tag match uses a correlated
+            // EXISTS so a link is never duplicated by the join (which would break paging).
+            $qb->andWhere(
+                'LOWER(l.code) LIKE :q OR LOWER(l.targetUrl) LIKE :q OR LOWER(l.title) LIKE :q OR LOWER(l.notes) LIKE :q'
+                .' OR EXISTS (SELECT tt.id FROM '.Tag::class.' tt JOIN tt.links tl WHERE tl = l AND LOWER(tt.name) LIKE :q)',
+            )->setParameter('q', '%'.mb_strtolower(trim($search)).'%');
         }
         match ($status) {
             'live' => $qb->andWhere('l.active = true AND d.active = true AND (l.expiresAt IS NULL OR l.expiresAt > :now)')
