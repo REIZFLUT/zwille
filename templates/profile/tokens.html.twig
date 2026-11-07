@@ -61,18 +61,58 @@
             {% endif %}
         </div>
 
+        <div class="card">
+            <h2>{{ 'agent.new_token'|trans }}</h2>
+            <p class="small muted">{{ 'agent.intro'|trans }}</p>
+            {% if sensitive_confirmed %}
+                {{ form_start(agent_form, {action: path('app_profile_tokens')}) }}
+                    {{ form_errors(agent_form) }}
+                    <div class="form-row">
+                        {{ form_row(agent_form.name) }}
+                        {{ form_row(agent_form.days) }}
+                    </div>
+                    {{ form_row(agent_form.scopes) }}
+                    {% if agent_form.domains.vars.choices is not empty %}
+                        {{ form_row(agent_form.domains) }}
+                    {% else %}
+                        {% do agent_form.domains.setRendered %}
+                    {% endif %}
+                    <div class="form-row">
+                        {{ form_row(agent_form.targetHosts) }}
+                        {{ form_row(agent_form.allowedIps) }}
+                    </div>
+                    {{ form_rest(agent_form) }}
+                    <button class="btn btn-primary">{{ 'agent.create'|trans }}</button>
+                {{ form_end(agent_form) }}
+            {% else %}
+                <p class="muted small">{{ 'profile.confirm_needed'|trans }}</p>
+            {% endif %}
+        </div>
+
         <div class="card flush">
             {% if tokens is empty %}
                 <div class="empty"><p>{{ 'api.none'|trans }}</p></div>
             {% else %}
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>{{ 'api.token_name'|trans }}</th><th>{{ 'api.token'|trans }}</th><th class="hide-sm">{{ 'passkey.last_used'|trans }}</th><th class="hide-sm">{{ 'api.token_expires'|trans }}</th><th></th></tr></thead>
+                        <thead><tr><th>{{ 'api.token_name'|trans }}</th><th>{{ 'api.token'|trans }}</th><th>{{ 'agent.kind'|trans }}</th><th class="hide-sm">{{ 'passkey.last_used'|trans }}</th><th class="hide-sm">{{ 'api.token_expires'|trans }}</th><th></th></tr></thead>
                         <tbody>
                             {% for token in tokens %}
                                 <tr>
                                     <td>{{ token.name }}</td>
                                     <td class="mono small">{{ token.hint }}…</td>
+                                    <td class="small">
+                                        {% if token.agent %}
+                                            <span class="badge badge-accent">{{ 'agent.kind_agent'|trans }}</span>
+                                            {% if token.revoked %}<span class="badge badge-danger">{{ 'agent.revoked'|trans }}</span>{% endif %}
+                                            <div class="muted">{{ token.scopes|join(', ') }}</div>
+                                            {% if token.restrictsDomains %}<div class="muted">{{ token.domains|map(d => d.hostname)|join(', ') }}</div>{% endif %}
+                                            {% if token.targetHosts is not empty %}<div class="muted">{{ 'agent.targets_short'|trans }}: {{ token.targetHosts|join(', ') }}</div>{% endif %}
+                                            {% if token.allowedIps is not empty %}<div class="muted">{{ 'agent.ips_short'|trans }}: {{ token.allowedIps|join(', ') }}</div>{% endif %}
+                                        {% else %}
+                                            {{ 'agent.kind_personal'|trans }}
+                                        {% endif %}
+                                    </td>
                                     <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|date('d.m.Y H:i') : '–' }}</td>
                                     <td class="hide-sm small">
                                         {% if token.expiresAt %}
@@ -80,9 +120,9 @@
                                         {% else %}–{% endif %}
                                     </td>
                                     <td>
-                                        <form method="post" action="{{ path('app_profile_token_delete', {id: token.id}) }}" class="inline-form" data-confirm="{{ 'api.delete_confirm'|trans }}">
+                                        <form method="post" action="{{ path('app_profile_token_delete', {id: token.id}) }}" class="inline-form" data-confirm="{{ (token.agent and token.revoked ? 'agent.remove_confirm' : 'api.delete_confirm')|trans }}">
                                             <input type="hidden" name="_token" value="{{ csrf_token('api-token-delete-' ~ token.id) }}">
-                                            <button class="btn btn-sm btn-danger">{{ 'action.revoke'|trans }}</button>
+                                            <button class="btn btn-sm btn-danger">{{ (token.agent and token.revoked ? 'action.delete' : 'action.revoke')|trans }}</button>
                                         </form>
                                     </td>
                                 </tr>

@@ -34,11 +34,12 @@ final class SettingsController extends AbstractController
             'tracking' => $settings->getBool(Settings::TRACKING),
             'trackCountry' => $settings->getBool(Settings::TRACK_COUNTRY),
             'require2faAdmins' => $settings->getBool(Settings::REQUIRE_2FA_ADMINS),
+            'agentAccess' => $settings->getBool(Settings::AGENT_ACCESS),
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var array{title: string, accent: string, logo: ?UploadedFile, removeLogo: bool, codeLength: int, defaultRedirect: int, fetchTitle: bool, tracking: bool, trackCountry: bool, require2faAdmins: bool} $data */
+            /** @var array{title: string, accent: string, logo: ?UploadedFile, removeLogo: bool, codeLength: int, defaultRedirect: int, fetchTitle: bool, tracking: bool, trackCountry: bool, require2faAdmins: bool, agentAccess: bool} $data */
             $data = $form->getData();
             $values = [
                 Settings::TITLE => $data['title'],
@@ -49,6 +50,7 @@ final class SettingsController extends AbstractController
                 Settings::TRACKING => $data['tracking'],
                 Settings::TRACK_COUNTRY => $data['trackCountry'],
                 Settings::REQUIRE_2FA_ADMINS => $data['require2faAdmins'],
+                Settings::AGENT_ACCESS => $data['agentAccess'],
             ];
             if ($data['removeLogo']) {
                 $values[Settings::LOGO] = null;

@@ -21,3 +21,8 @@ link.password.too_short: 'The password must be at least 6 characters long.'
 link.password.too_long: 'The password is too long (at most 72 bytes).'
 device_targets.device.invalid: 'Please choose iOS, Android or desktop.'
 device_targets.duplicate: 'Each device may only be given once.'
+url.not_allowed_for_token: '"{{ host }}" is not an allowed target for this token.'
+agent.scopes_required: Choose at least one permission.
+agent.too_many_entries: 'At most %max% entries.'
+agent.invalid_host: '"%value%" is not a valid host name.'
+agent.invalid_ip: '"%value%" is not a valid IP address or CIDR range.'

@@ -27,6 +27,20 @@ framework:
             policy: sliding_window
             limit: 120
             interval: '1 minute'
+        # Agent tokens: an extra budget per token for everything that changes data, on top
+        # of the per-user "api" limit (see App\EventListener\ApiScopeListener).
+        agent_write:
+            policy: sliding_window
+            limit: 30
+            interval: '1 minute'
+        agent_write_daily:
+            policy: fixed_window
+            limit: 300
+            interval: '1 day'
+        agent_delete_daily:
+            policy: fixed_window
+            limit: 20
+            interval: '1 day'
         password_reset:
             policy: fixed_window
             limit: 5

@@ -29,4 +29,32 @@ class ApiTokenRepository extends ServiceEntityRepository
     {
         return $this->findBy(['user' => $user], ['createdAt' => 'DESC']);
     }
+
+    /** @return list<ApiToken> every agent token of every user, newest first */
+    public function findAgentTokens(): array
+    {
+        return $this->createQueryBuilder('t')
+            ->addSelect('u')
+            ->innerJoin('t.user', 'u')
+            ->where('t.kind = :agent')
+            ->setParameter('agent', ApiToken::KIND_AGENT)
+            ->orderBy('t.createdAt', \SortDirection::Descending)
+            ->addOrderBy('t.id', \SortDirection::Descending)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** Revokes every agent token that is not revoked yet; returns how many were revoked. */
+    public function revokeAllAgentTokens(): int
+    {
+        return (int) $this->createQueryBuilder('t')
+            ->update()
+            ->set('t.revokedAt', ':now')
+            ->where('t.kind = :agent')
+            ->andWhere('t.revokedAt IS NULL')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('agent', ApiToken::KIND_AGENT)
+            ->getQuery()
+            ->execute();
+    }
 }

@@ -47,6 +47,10 @@ its job.
   revealed before unlocking) and send iOS, Android or desktop visitors to different targets.
 - QR codes (SVG/PNG), CSV export, expiry date, active toggle, 301/302/307/308.
 - **REST API** with personal tokens ([docs/API.md](docs/API.md)).
+- **AI agent tokens** – for AI agents and other automation: never admin rights, always
+  expiring, only the chosen scopes (read, write, delete, statistics), optionally limited to
+  domains, target hosts and client addresses, with their own write budget, an admin overview
+  and a kill switch.
 - **Plugins** – typed events instead of patched core files: rewrite redirect targets, veto
   clicks, reject links with a visible message, extend API payloads and the admin UI
   ([docs/EXTENDING.md](docs/EXTENDING.md)).
@@ -84,6 +88,9 @@ Security and privacy are architecture decisions in this project, not features ad
   re-authentication first.
 - **Admin access** is protected by an IP allowlist (IPv4/IPv6, CIDR) *and* a voter on every
   admin controller; unknown hosts never reach application routes at all.
+- **AI agents get least privilege**: an agent token never carries admin rights, whoever owns
+  it, every API action declares the scope it needs (actions without one are closed to
+  agents), and a single switch in the settings blocks every agent at once.
 - **Privacy by default**: no full IP addresses (IPv4 `/24`, IPv6 `/48`), no external
   analytics or geolocation service — visitor data never leaves your server.
 - **Every query is parameterised** through Doctrine/DBAL (no string-built SQL), Twig escapes
@@ -131,6 +138,7 @@ php bin/console app:domain:add go.company.com --default
 | `app:db:backup [target]` | Consistent database backup: `VACUUM INTO` for SQLite, `mariadb-dump`/`mysqldump` for MySQL/MariaDB |
 | `app:plugin:list` | List whitelisted plugins and whether they are loaded |
 | `app:plugin:validate` | Check the plugin whitelist and every plugin directory (exit 1 on errors) |
+| `app:token:revoke [id] [--all-agents]` | Revoke an API token, or every AI agent token at once; lists agent tokens without arguments |
 
 ## Development
 

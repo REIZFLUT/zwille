@@ -34,6 +34,7 @@
             <div class="card">
                 <h2>{{ 'settings.security'|trans }}</h2>
                 {{ form_row(form.require2faAdmins) }}
+                {{ form_row(form.agentAccess) }}
             </div>
         </div>
         {{ form_rest(form) }}

@@ -24,6 +24,7 @@ nav.stats: Statistik
 nav.ip_rules: IP-Sperre
 nav.settings: Einstellungen
 nav.import: Import
+nav.agent_tokens: KI-Agenten
 nav.profile: Profil
 nav.logout: Abmelden
 nav.group_links: Links
@@ -261,7 +262,7 @@ profile.confirm_no_factor: Für dieses Konto gibt es noch kein Passwort und kein
 profile.confirm_passkey_hint: Dieses Konto meldet sich mit einem Passkey an. Melde dich einmal neu mit dem Passkey an – danach sind sicherheitsrelevante Aktionen fünf Minuten lang freigeschaltet.
 profile.confirm_passkey_button: Mit Passkey bestätigen
 
-api.intro: Persönliche Zugangstokens für die REST-API. Ein Token handelt mit deinen Rechten.
+api.intro: Zugangstokens für die REST-API. Ein persönliches Token handelt mit deinen Rechten, ein KI-Agent-Token nur mit den Rechten, die du ihm gibst.
 api.new_token: Neues Token
 api.token_name: Name
 api.token_name_placeholder: z. B. CRM-Anbindung
@@ -275,6 +276,41 @@ api.token: Token
 api.delete_confirm: Token widerrufen? Anwendungen, die es benutzen, verlieren den Zugriff.
 api.example: Beispiel
 api.docs_hint: 'Endpunkte: GET/POST /api/v1/links, GET/PATCH/DELETE /api/v1/links/{id}, GET /api/v1/links/{id}/stats, GET /api/v1/domains. Details in docs/API.md.'
+
+agent.new_token: Neues KI-Agent-Token
+agent.intro: 'Für KI-Agenten und andere Automatisierung. Ein Agent-Token handelt nie mit Admin-Rechten, sondern nur auf deinen eigenen Links und den dir freigegebenen Domains, läuft immer ab und darf nur, was du hier ankreuzt.'
+agent.name_placeholder: z. B. Marketing-Assistent
+agent.days_7: 7 Tage
+agent.days_30: 30 Tage
+agent.days_90: 90 Tage
+agent.scopes: Rechte
+'agent.scope.domains:read': Domains lesen
+'agent.scope.links:read': Links lesen
+'agent.scope.links:write': Links anlegen und ändern
+'agent.scope.links:delete': Links löschen
+'agent.scope.stats:read': Statistik lesen
+agent.domains: Nur auf diesen Domains
+agent.domains_help: Nichts angekreuzt = alle dir freigegebenen Domains. Mit Einschränkung gibt es keine Gesamtstatistik, nur die Statistik einzelner Links.
+agent.target_hosts: Erlaubte Ziel-Hosts
+agent.target_hosts_help: 'Ein Host pro Zeile; Subdomains sind mit erlaubt. Leer = jedes Ziel.'
+agent.allowed_ips: Erlaubte Absender-Adressen
+agent.allowed_ips_help: 'IP-Adressen oder CIDR-Bereiche, eine pro Zeile. Leer = von überall.'
+agent.create: Agent-Token erzeugen
+agent.kind: Art
+agent.kind_agent: KI-Agent
+agent.kind_personal: persönlich
+agent.revoked: widerrufen
+agent.targets_short: Ziele
+agent.ips_short: Adressen
+agent.remove_confirm: Widerrufenes Token endgültig löschen?
+agent.admin_intro: Alle KI-Agent-Tokens aller Nutzer. Agent-Tokens handeln nie mit Admin-Rechten.
+agent.access_on: KI-Agenten zugelassen
+agent.access_off: KI-Agenten gesperrt
+agent.kill_switch_hint: 'Der Notschalter, der alle Agent-Tokens sofort sperrt, liegt in den'
+agent.revoke_all: Alle Agent-Tokens widerrufen
+agent.revoke_all_confirm: Alle KI-Agent-Tokens aller Nutzer widerrufen? Das lässt sich nicht rückgängig machen.
+agent.none: Noch keine KI-Agent-Tokens.
+agent.owner: Nutzer
 
 users.intro: Nutzer sehen nur ihre eigenen Links und dürfen nur die ihnen freigegebenen Domains verwenden. Admins sehen alles.
 users.new: Nutzer anlegen
@@ -409,6 +445,8 @@ settings.geoip_missing: Keine GeoIP-Datenbank konfiguriert – Länder bleiben l
 settings.security: Sicherheit
 settings.require_2fa_admins: Zweiten Faktor für Admins vorschreiben
 settings.require_2fa_admins_help: Admins ohne Passkey und ohne TOTP werden nach der Anmeldung zur Einrichtung geschickt.
+settings.agent_access: KI-Agenten zulassen
+settings.agent_access_help: Notschalter. Ausgeschaltet wird jedes KI-Agent-Token sofort abgewiesen; persönliche Tokens funktionieren weiter.
 
 redirect.unknown_domain.title: Unbekannte Adresse
 redirect.unknown_domain.text: Unter %host% sind keine Kurzlinks eingerichtet.
@@ -455,6 +493,8 @@ flash.profile_saved: Profil gespeichert.
 flash.sensitive_confirmed: Bestätigt. Sicherheitsänderungen sind jetzt 5 Minuten lang möglich.
 flash.settings_saved: Einstellungen gespeichert.
 flash.token_deleted: Token widerrufen.
+flash.agent_tokens_revoked: Alle KI-Agent-Tokens widerrufen.
+flash.agent_tokens_none: Es gab kein aktives KI-Agent-Token.
 flash.totp_disabled: Zwei-Faktor-Code ausgeschaltet.
 flash.totp_enabled: Zwei-Faktor-Code aktiv. Bewahre die Backup-Codes sicher auf.
 flash.user_2fa_reset: Zwei-Faktor-Code zurückgesetzt.

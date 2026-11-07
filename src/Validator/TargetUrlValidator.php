@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Validator;
 
 use App\Domain\HostRegistry;
+use App\Security\CurrentApiToken;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 final class TargetUrlValidator extends ConstraintValidator
 {
-    public function __construct(private readonly HostRegistry $hosts)
-    {
+    public function __construct(
+        private readonly HostRegistry $hosts,
+        private readonly CurrentApiToken $apiToken,
+    ) {
     }
 
     public function validate(mixed $value, Constraint $constraint): void
@@ -38,6 +41,12 @@ final class TargetUrlValidator extends ConstraintValidator
 
         if ($this->hosts->isOwnHost($host)) {
             $this->context->buildViolation($constraint->loopMessage)->addViolation();
+
+            return;
+        }
+
+        if (false === $this->apiToken->get()?->allowsTargetHost($host)) {
+            $this->context->buildViolation($constraint->notAllowedMessage)->setParameter('{{ host }}', $host)->addViolation();
         }
     }
 }

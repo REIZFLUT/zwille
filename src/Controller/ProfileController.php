@@ -6,13 +6,17 @@ namespace App\Controller;
 
 use App\Audit\AuditLogger;
 use App\Entity\ApiToken;
+use App\Entity\Domain;
 use App\Entity\User;
 use App\Entity\WebauthnCredential;
+use App\Form\AgentTokenType;
 use App\Form\ChangePasswordType;
 use App\Form\ProfileType;
 use App\Qr\QrCodeRenderer;
 use App\Repository\ApiTokenRepository;
+use App\Repository\DomainRepository;
 use App\Repository\WebauthnCredentialRepository;
+use App\Security\ApiScope;
 use App\Security\BackupCodeGenerator;
 use App\Security\SecretBox;
 use App\Security\SensitiveConfirmation;
@@ -23,6 +27,7 @@ use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -292,10 +297,30 @@ final class ProfileController extends AbstractController
     }
 
     #[Route('/tokens', name: 'app_profile_tokens', methods: ['GET', 'POST'])]
-    public function tokens(Request $request, #[CurrentUser] User $user, ApiTokenRepository $tokens, SensitiveConfirmation $confirmation): Response
+    public function tokens(Request $request, #[CurrentUser] User $user, ApiTokenRepository $tokens, DomainRepository $domains, SensitiveConfirmation $confirmation): Response
     {
         $plain = null;
-        if ($request->isMethod('POST')) {
+        $agentForm = $this->agentTokenForm($user, $domains);
+        $agentForm->handleRequest($request);
+
+        if ($agentForm->isSubmitted()) {
+            if ($agentForm->isValid()) {
+                /** @var array{name: string, days: int, scopes: list<string>, domains: list<Domain>, targetHosts: ?string, allowedIps: ?string} $data */
+                $data = $agentForm->getData();
+                [$token, $plain] = ApiToken::issueForAgent(
+                    $user,
+                    trim($data['name']),
+                    $data['days'],
+                    $data['scopes'],
+                    $data['domains'],
+                    AgentTokenType::lines($data['targetHosts']),
+                    AgentTokenType::lines($data['allowedIps']),
+                );
+                $this->em->persist($token);
+                $this->em->flush();
+                $agentForm = null;
+            }
+        } elseif ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('api-token-create', (string) $request->request->get('_token'))) {
                 throw $this->createAccessDeniedException();
             }
@@ -311,11 +336,23 @@ final class ProfileController extends AbstractController
             $this->audit->record(AuditLogger::TOKEN_CREATED, ['name' => $token->getName()], actor: $user, targetType: 'api_token', targetId: $token->getId());
         }
 
+        $invalid = null !== $agentForm && $agentForm->isSubmitted() && !$agentForm->isValid();
+
         return $this->render('profile/tokens.html.twig', [
             'tokens' => $tokens->findByUser($user),
             'plain_token' => $plain,
+            'agent_form' => $agentForm ?? $this->agentTokenForm($user, $domains),
             'has_passkeys' => $this->credentials->countByUser($user) > 0,
             'sensitive_confirmed' => $confirmation->isConfirmed($request->getSession()),
+        ], new Response(status: $invalid ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+    }
+
+    /** @return FormInterface<array<string, mixed>> */
+    private function agentTokenForm(User $user, DomainRepository $domains): FormInterface
+    {
+        // Only the user's own assigned domains: an agent token never acts as admin.
+        return $this->createForm(AgentTokenType::class, ['days' => 30, 'scopes' => ApiScope::AGENT_DEFAULT], [
+            'domains' => $domains->findUsableBy($user, false),
         ]);
     }
 
@@ -325,7 +362,13 @@ final class ProfileController extends AbstractController
         if ($token->getUser()->getId() !== $user->getId() || !$this->isCsrfTokenValid('api-token-delete-'.$token->getId(), (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();
         }
-        $this->em->remove($token);
+        // An agent token is kept as revoked, so its history stays traceable; a second click
+        // (or a personal token) removes it for good.
+        if ($token->isAgent() && !$token->isRevoked()) {
+            $token->revoke();
+        } else {
+            $this->em->remove($token);
+        }
         $this->em->flush();
         $this->audit->record(AuditLogger::TOKEN_REVOKED, ['name' => $token->getName()], actor: $user, targetType: 'api_token', targetId: $token->getId());
         $this->addFlash('success', 'flash.token_deleted');
