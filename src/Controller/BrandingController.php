@@ -46,7 +46,7 @@ final class BrandingController extends AbstractController
     public function favicon(Request $request, Settings $settings): Response
     {
         $palette = $settings->getAccentPalette();
-        $response = $this->render('branding/favicon.svg.twig', ['accent' => $palette->accent, 'ink' => $palette->ink]);
+        $response = $this->render('branding/favicon.svg.twig', ['accent' => $palette->accent]);
         $response->headers->set('Content-Type', 'image/svg+xml');
         $response->setEtag(md5((string) $response->getContent()));
         $response->setPublic();

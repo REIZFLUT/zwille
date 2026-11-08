@@ -155,10 +155,9 @@ main:focus { outline: none; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); flex-shrink: 0; }
 .brand:hover { text-decoration: none; }
 .brand img { height: 30px; width: auto; }
-.logo { height: 20px; width: auto; display: block; }
-.logo-mark { fill: var(--accent); }
-.logo-mouth { fill: var(--accent-ink); }
-.logo-word { fill: currentColor; }
+.brand img.logo { height: 32px; width: 32px; display: block; }
+.logo-full { height: 160px; width: auto; display: block; }
+.logo-accent { fill: var(--accent); }
 
 .sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 20px; }
 .nav-group { display: flex; flex-direction: column; gap: 2px; }
@@ -323,7 +322,6 @@ main:focus { outline: none; }
 .auth { flex: 1; display: grid; place-items: center; padding: 40px 20px; }
 .auth-box { width: 100%; max-width: 400px; }
 .auth-box .brand { justify-content: center; margin-bottom: 24px; }
-.auth-box .logo { height: 26px; }
 .auth-box .card { padding: 28px; }
 .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .85rem; margin: 18px 0; }
 .divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid var(--border); }

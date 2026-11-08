@@ -108,19 +108,34 @@ final class PagesTest extends AppTestCase
         self::assertArrayHasKey('challenge', $request);
     }
 
+    public function testHeaderShowsTheSlingshotMarkAndLoginTheFullLogo(): void
+    {
+        $crawler = $this->client->request('GET', '/login');
+        self::assertResponseIsSuccessful();
+        $logo = $crawler->filter('.auth-box svg.logo-full');
+        self::assertSame(1, $logo->count());
+        self::assertSame('Zwille', $logo->attr('aria-label'));
+        self::assertGreaterThan(0, $logo->filter('.logo-accent')->count(), 'the yellow parts follow the accent colour');
+
+        $this->client->loginUser($this->createUser('logo@example.com'));
+        $crawler = $this->client->request('GET', '/');
+        $marks = $crawler->filter('a.brand img.logo[src="/branding/favicon.svg"]');
+        self::assertSame(2, $marks->count(), 'sidebar and top bar');
+        self::assertSame('Zwille', $marks->attr('alt'));
+    }
+
     public function testFaviconFollowsTheAccentColour(): void
     {
         $this->client->request('GET', '/branding/favicon.svg');
         self::assertResponseHeaderSame('Content-Type', 'image/svg+xml');
         $svg = (string) $this->client->getResponse()->getContent();
         self::assertStringContainsString('fill="#fed90f"', $svg, 'Simpsons yellow by default');
-        self::assertStringContainsString('fill="'.\App\Branding\AccentPalette::DARK_INK.'"', $svg);
 
         static::getContainer()->get(\App\Settings\Settings::class)->save([\App\Settings\Settings::ACCENT => '#660099']);
         $this->client->request('GET', '/branding/favicon.svg');
         $svg = (string) $this->client->getResponse()->getContent();
-        self::assertStringContainsString('fill="#660099"', $svg);
-        self::assertStringContainsString('fill="#ffffff"', $svg, 'white mouth on a dark accent');
+        self::assertStringContainsString('fill="#660099"', $svg, 'the slingshot takes the accent colour');
+        self::assertStringNotContainsString('#fed90f', $svg);
     }
 
     public function testThemeCssDerivesReadableColoursFromLightAccent(): void
