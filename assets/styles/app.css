@@ -9,6 +9,13 @@
  * The dark tokens therefore appear twice: for data-theme="dark" and for the media query.
  */
 
+/* Wordmark font, self-hosted (Apache 2.0, see assets/fonts/LuckiestGuy-LICENSE.txt). */
+@font-face {
+    font-family: "Luckiest Guy";
+    src: url("../fonts/LuckiestGuy-Regular.ttf") format("truetype");
+    font-display: swap;
+}
+
 :root {
     --accent: #fed90f;
     --accent-ink: #1d1b22;
@@ -155,7 +162,10 @@ main:focus { outline: none; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); flex-shrink: 0; }
 .brand:hover { text-decoration: none; }
 .brand img { height: 30px; width: auto; }
-.brand img.logo { height: 32px; width: 32px; display: block; }
+.brand img.logo { height: 40px; width: 40px; display: block; flex-shrink: 0; }
+.brand-text { display: flex; flex-direction: column; min-width: 0; }
+.brand-word { font-family: "Luckiest Guy", var(--font); font-size: 24px; line-height: 1; letter-spacing: .02em; padding-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-claim { font-size: 12px; line-height: 1.2; color: var(--muted); margin-top: 2px; white-space: nowrap; }
 .logo-full { height: 160px; width: auto; display: block; }
 .logo-accent { fill: var(--accent); }
 

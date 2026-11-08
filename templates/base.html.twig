@@ -27,7 +27,7 @@
                     {% if has_custom_logo() %}
                         <img src="{{ path('app_branding_logo') }}" alt="{{ app_title() }}">
                     {% else %}
-                        <img class="logo" src="{{ path('app_branding_favicon') }}" alt="{{ app_title() }}" width="32" height="32">
+                        {{ include('_brand.html.twig') }}
                     {% endif %}
                 </a>
                 <button type="button" class="btn btn-ghost btn-icon sidebar-close" data-nav-close aria-label="{{ 'nav.close'|trans }}">{{ ui.icon('x') }}</button>
@@ -96,7 +96,7 @@
                     {% if has_custom_logo() %}
                         <img src="{{ path('app_branding_logo') }}" alt="{{ app_title() }}">
                     {% else %}
-                        <img class="logo" src="{{ path('app_branding_favicon') }}" alt="{{ app_title() }}" width="32" height="32">
+                        {{ include('_brand.html.twig') }}
                     {% endif %}
                 </a>
                 <form class="topbar-search" method="get" action="{{ path('app_links') }}" role="search">

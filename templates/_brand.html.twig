@@ -1,0 +1,7 @@
+{# Sidebar/top-bar brand: slingshot mark (accent colour via the favicon route), the title in the
+   wordmark font and the claim. The link around it carries the accessible name, so the image is decorative. #}
+<img class="logo" src="{{ path('app_branding_favicon') }}" alt="" width="40" height="40">
+<span class="brand-text">
+    <span class="brand-word">{{ app_title() }}</span>
+    <span class="brand-claim">{{ 'brand.claim'|trans }}</span>
+</span>

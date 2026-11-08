@@ -108,7 +108,7 @@ final class PagesTest extends AppTestCase
         self::assertArrayHasKey('challenge', $request);
     }
 
-    public function testHeaderShowsTheSlingshotMarkAndLoginTheFullLogo(): void
+    public function testHeaderShowsMarkWordAndClaimAndLoginTheFullLogo(): void
     {
         $crawler = $this->client->request('GET', '/login');
         self::assertResponseIsSuccessful();
@@ -119,9 +119,11 @@ final class PagesTest extends AppTestCase
 
         $this->client->loginUser($this->createUser('logo@example.com'));
         $crawler = $this->client->request('GET', '/');
-        $marks = $crawler->filter('a.brand img.logo[src="/branding/favicon.svg"]');
-        self::assertSame(2, $marks->count(), 'sidebar and top bar');
-        self::assertSame('Zwille', $marks->attr('alt'));
+        $brands = $crawler->filter('a.brand');
+        self::assertSame(2, $brands->count(), 'sidebar and top bar');
+        self::assertSame(2, $brands->filter('img.logo[src="/branding/favicon.svg"][alt=""]')->count(), 'decorative: the text names the link');
+        self::assertSame('Zwille', $brands->filter('.brand-word')->text());
+        self::assertContains($brands->filter('.brand-claim')->text(), ['Ein Link, viele Ziele', 'One link, many targets']);
     }
 
     public function testFaviconFollowsTheAccentColour(): void

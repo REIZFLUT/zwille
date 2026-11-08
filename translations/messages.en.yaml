@@ -650,3 +650,4 @@ redirect.password.submit: Continue
 redirect.password.wrong: 'The password is not correct. Please try again.'
 redirect.password.throttled_title: Too many attempts
 redirect.password.throttled_text: 'Please wait a moment and try again later.'
+brand.claim: One link, many targets
