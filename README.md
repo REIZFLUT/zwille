@@ -29,6 +29,30 @@ simplicity and long-term sustainability in mind.
 No Node build step, no queue, no background workers. Just a modern PHP application that does
 its job.
 
+## Screenshots
+
+<img src="docs/screenshots/en/dashboard.png" alt="Dashboard with quick shortening, recent links and clicks per day" width="100%">
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/link-detail.png" alt="Link detail page with statistics, QR code and per-language targets" width="100%"><br><sub>Link details: statistics, QR code, language targets</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/link-edit.png" alt="Editing a link with language and device targets, time window, click limit and password" width="100%"><br><sub>One link, many targets: language, device, time window, limit, password</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en/statistics.png" alt="Statistics across all links: referrers, countries, devices, browsers" width="100%"><br><sub>Privacy-friendly statistics without cookies</sub></td>
+    <td width="50%"><img src="docs/screenshots/en/audit-log.png" alt="Audit log with sign-ins and link changes" width="100%"><br><sub>Audit log: who changed what and when</sub></td>
+  </tr>
+</table>
+
+<details>
+<summary>More screenshots</summary>
+
+<img src="docs/screenshots/en/links.png" alt="Link list with filters, tags and status" width="100%">
+
+</details>
+
+*The screenshots show the demo data from `app:demo:seed` (see below).*
+
 ## Features
 
 - **Any number of (sub)domains** – `go.company.com/trade-show`, `jobs.company.com/apprentice`; short codes are
@@ -141,11 +165,28 @@ php bin/console app:user:create admin@company.com "Admin" --admin
 php bin/console app:domain:add go.company.com --default
 ```
 
+### Try it with demo data
+
+To evaluate Zwille locally, start with a fictional company, three users, fourteen links and a few thousand clicks:
+
+```bash
+git clone https://github.com/REIZFLUT/zwille.git && cd zwille
+composer install
+cp .env.example .env
+mkdir -p var/data
+php bin/console doctrine:migrations:migrate -n
+php bin/console app:demo:seed                # prints the sign-in and a generated password
+php -S 127.0.0.1:8000 -t public
+```
+
+Open <http://localhost:8000> and sign in as `mara@nordlicht.example` with the printed password. The short links live on `go.localhost`, `links.localhost` and `events.localhost` (current browsers resolve `*.localhost` to your own machine), e.g. <http://go.localhost:8000/herbst>. `app:demo:seed` only runs on an empty installation and never touches existing data.
+
 ## Console commands
 
 | Command | Purpose |
 |---|---|
 | `app:user:create <email> [name] [--admin] [--invite]` | Create a user (prompts for a password or issues an invitation link) |
+| `app:demo:seed [--password=…]` | Fill an empty installation with demo data for evaluation (users, `*.localhost` domains, links, clicks) |
 | `app:domain:add <host> [--root=URL] [--default]` | Add a short-link domain |
 | `app:admin-ip [list\|allow\|remove\|clear] [cidr] [label]` | Manage the IP restriction for `/admin` (emergency access) |
 | `app:clicks:prune [--days=N]` | Delete old clicks (cron) |

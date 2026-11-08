@@ -80,7 +80,14 @@
                                 </td>
                                 <td class="hide-sm small mono">{{ entry.ip ?? '–' }}</td>
                                 <td class="hide-sm small">
-                                    {% if entry.context is empty %}–{% else %}<code class="mono small">{{ entry.context|json_encode }}</code>{% endif %}
+                                    {% if entry.context is empty %}–{% else %}
+                                        <dl class="audit-context">
+                                            {% for key, value in entry.context %}
+                                                <dt>{{ key }}</dt>
+                                                <dd>{{ value is iterable ? value|json_encode(constant('JSON_UNESCAPED_SLASHES') b-or constant('JSON_UNESCAPED_UNICODE')) : (value is same as(true) ? 'true' : (value is same as(false) ? 'false' : value)) }}</dd>
+                                            {% endfor %}
+                                        </dl>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

@@ -29,6 +29,30 @@ Entwickelt mit Blick auf Wartbarkeit, betriebliche Einfachheit und langfristige 
 Kein Node-Build, keine Queue, keine Hintergrunddienste. Eine moderne PHP-Anwendung, die ihre
 Aufgabe erledigt.
 
+## Screenshots
+
+<img src="docs/screenshots/de/dashboard.png" alt="Übersicht mit Schnell-Kürzen, neuesten Links und Klicks pro Tag" width="100%">
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/de/link-detail.png" alt="Link-Detailseite mit Statistik, QR-Code und sprachabhängigen Zielen" width="100%"><br><sub>Link-Details: Statistik, QR-Code, Sprachziele</sub></td>
+    <td width="50%"><img src="docs/screenshots/de/link-edit.png" alt="Link bearbeiten mit Sprach- und Geräte-Zielen, Zeitfenster, Klick-Limit und Passwort" width="100%"><br><sub>Ein Link, viele Ziele: Sprache, Gerät, Zeitfenster, Limit, Passwort</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/de/statistics.png" alt="Statistik über alle Links: Herkunft, Länder, Geräte, Browser" width="100%"><br><sub>Datensparsame Statistik ohne Cookies</sub></td>
+    <td width="50%"><img src="docs/screenshots/de/audit-log.png" alt="Audit-Log mit Anmeldungen und Link-Änderungen" width="100%"><br><sub>Audit-Log: wer hat was wann geändert</sub></td>
+  </tr>
+</table>
+
+<details>
+<summary>Weitere Screenshots</summary>
+
+<img src="docs/screenshots/de/links.png" alt="Link-Liste mit Filtern, Tags und Status" width="100%">
+
+</details>
+
+*Die Screenshots zeigen die Demodaten aus `app:demo:seed` (siehe unten).*
+
 ## Funktionen
 
 - **Beliebig viele (Sub)Domains** – `go.firma.de/messe`, `jobs.firma.de/azubi`; Kürzel sind pro Domain eindeutig,
@@ -142,11 +166,28 @@ php bin/console app:user:create admin@firma.de "Admin" --admin
 php bin/console app:domain:add go.firma.de --default
 ```
 
+### Mit Demodaten ausprobieren
+
+Zum lokalen Ausprobieren gibt es eine erfundene Firma mit drei Nutzern, vierzehn Links und ein paar tausend Klicks:
+
+```bash
+git clone https://github.com/REIZFLUT/zwille.git && cd zwille
+composer install
+cp .env.example .env
+mkdir -p var/data
+php bin/console doctrine:migrations:migrate -n
+php bin/console app:demo:seed                # gibt Anmeldung und ein erzeugtes Passwort aus
+php -S 127.0.0.1:8000 -t public
+```
+
+Dann <http://localhost:8000> öffnen und als `mara@nordlicht.example` mit dem ausgegebenen Passwort anmelden. Die Kurzlinks liegen auf `go.localhost`, `links.localhost` und `events.localhost` (aktuelle Browser leiten `*.localhost` auf den eigenen Rechner), z. B. <http://go.localhost:8000/herbst>. `app:demo:seed` läuft nur auf einer leeren Installation und fasst vorhandene Daten nie an.
+
 ## Konsolenbefehle
 
 | Befehl | Zweck |
 |---|---|
 | `app:user:create <email> [name] [--admin] [--invite]` | Nutzer anlegen (Passwort abfragen oder Einladungslink) |
+| `app:demo:seed [--password=…]` | Leere Installation zum Ausprobieren mit Demodaten füllen (Nutzer, `*.localhost`-Domains, Links, Klicks) |
 | `app:domain:add <host> [--root=URL] [--default]` | Kurzdomain anlegen |
 | `app:admin-ip [list\|allow\|remove\|clear] [cidr] [label]` | IP-Sperre für `/admin` verwalten (Notfallzugang) |
 | `app:clicks:prune [--days=N]` | alte Klicks löschen (Cron) |
