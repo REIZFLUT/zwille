@@ -1,6 +1,17 @@
-# Zwille
+<p align="center">
+  <img src="assets/images/zwille-logo.svg" alt="Zwille logo: a girl aiming a slingshot" width="180">
+</p>
 
-**English** · [Deutsch](README.de.md)
+<h1 align="center">Zwille</h1>
+
+<p align="center">
+  <a href="https://github.com/REIZFLUT/zwille/actions/workflows/ci.yml"><img src="https://github.com/REIZFLUT/zwille/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0"></a>
+  <img src="https://img.shields.io/badge/PHP-8.4-777bb4" alt="PHP 8.4">
+  <img src="https://img.shields.io/badge/Symfony-8.1-000000" alt="Symfony 8.1">
+</p>
+
+<p align="center"><b>English</b> · <a href="README.de.md">Deutsch</a></p>
 
 *Formerly EatMyShort.Link. A* Zwille *is German for slingshot — one fork, several directions,
 just like a short link with targets per language and device. Bart would approve.*

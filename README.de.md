@@ -1,6 +1,17 @@
-# Zwille
+<p align="center">
+  <img src="assets/images/zwille-logo.svg" alt="Zwille-Logo: ein Mädchen zielt mit einer Zwille" width="180">
+</p>
 
-[English](README.md) · **Deutsch**
+<h1 align="center">Zwille</h1>
+
+<p align="center">
+  <a href="https://github.com/REIZFLUT/zwille/actions/workflows/ci.yml"><img src="https://github.com/REIZFLUT/zwille/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License: GPL-3.0"></a>
+  <img src="https://img.shields.io/badge/PHP-8.4-777bb4" alt="PHP 8.4">
+  <img src="https://img.shields.io/badge/Symfony-8.1-000000" alt="Symfony 8.1">
+</p>
+
+<p align="center"><a href="README.md">English</a> · <b>Deutsch</b></p>
 
 *Früher EatMyShort.Link. Eine Zwille hat eine Gabel und schießt in mehrere Richtungen – wie ein
 Kurzlink mit Zielen je Sprache und Gerät. Bart hätte seine Freude.*
