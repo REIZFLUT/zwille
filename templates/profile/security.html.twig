@@ -76,8 +76,8 @@
                                         </form>
                                         {% if passkey.synced %}<span class="badge">{{ 'passkey.synced'|trans }}</span>{% endif %}
                                     </td>
-                                    <td class="hide-sm small muted">{{ passkey.createdAt|date('d.m.Y') }}</td>
-                                    <td class="hide-sm small muted">{{ passkey.lastUsedAt ? passkey.lastUsedAt|date('d.m.Y H:i') : '–' }}</td>
+                                    <td class="hide-sm small muted">{{ passkey.createdAt|local_date }}</td>
+                                    <td class="hide-sm small muted">{{ passkey.lastUsedAt ? passkey.lastUsedAt|local_datetime : '–' }}</td>
                                     <td>
                                         {% if sensitive_confirmed %}
                                             <form method="post" action="{{ path('app_profile_passkey_delete', {id: passkey.id}) }}" data-confirm="{{ 'passkey.delete_confirm'|trans }}" class="inline-form">

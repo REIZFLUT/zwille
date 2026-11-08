@@ -72,6 +72,10 @@ final class LinkType extends AbstractType
                     'choice_label' => 'name',
                     'required' => false,
                     'multiple' => true,
+                    // Checkboxes rendered as toggle chips (form/theme.html.twig, tag_choices_widget):
+                    // one click per tag instead of a ctrl-click list box.
+                    'expanded' => true,
+                    'block_prefix' => 'tag_choices',
                     'help' => 'link.tags_help',
                 ])
                 ->add('notes', TextareaType::class, [
@@ -119,7 +123,7 @@ final class LinkType extends AbstractType
                 ])
                 ->add('active', CheckboxType::class, ['label' => 'link.active', 'required' => false])
                 ->add('password', PasswordType::class, [
-                    'label' => 'link.password',
+                    'label' => 'link.password_field',
                     'mapped' => false,
                     'required' => false,
                     'help' => 'link.password_help',

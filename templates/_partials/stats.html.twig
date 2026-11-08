@@ -7,8 +7,8 @@
 <div class="stack">
     {% if part in ['all', 'summary'] %}
     <div class="stats">
-        <div class="stat"><div class="value">{{ stats.totals.clicks|number_format(0, ',', '.') }}</div><div class="label">{{ 'stats.clicks'|trans }}</div></div>
-        <div class="stat"><div class="value">{{ stats.totals.visitors|number_format(0, ',', '.') }}</div><div class="label">{{ 'stats.visitors'|trans }}</div></div>
+        <div class="stat"><div class="value">{{ stats.totals.clicks|local_number }}</div><div class="label">{{ 'stats.clicks'|trans }}</div></div>
+        <div class="stat"><div class="value">{{ stats.totals.visitors|local_number }}</div><div class="label">{{ 'stats.visitors'|trans }}</div></div>
         <div class="stat"><div class="value">{{ stats.period.days }}</div><div class="label">{{ 'stats.days'|trans }}</div></div>
     </div>
 
@@ -50,7 +50,7 @@
                                     {% elseif field == 'deviceType' %}{{ ('device.' ~ row.value)|trans }}
                                     {% else %}{{ row.value }}{% endif %}
                                 </span>
-                                <span class="count">{{ row.clicks|number_format(0, ',', '.') }}</span>
+                                <span class="count">{{ row.clicks|local_number }}</span>
                                 <span class="bar w{{ max > 0 ? (row.clicks / max * 20)|round : 0 }}"></span>
                             </li>
                         {% endfor %}

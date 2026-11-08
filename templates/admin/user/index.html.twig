@@ -45,7 +45,7 @@
                                 {% if row.passkeys > 0 %}<span class="badge badge-success">{{ 'passkey.count'|trans({'%count%': row.passkeys}) }}</span>{% endif %}
                             </td>
                             <td class="num">{{ row.links }}</td>
-                            <td class="hide-sm small muted">{{ u.lastLoginAt ? u.lastLoginAt|date('d.m.Y H:i') : '–' }}</td>
+                            <td class="hide-sm small muted">{{ u.lastLoginAt ? u.lastLoginAt|local_datetime : '–' }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

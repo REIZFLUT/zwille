@@ -6,6 +6,6 @@
 
 {{ url }}
 
-{{ 'mail.valid_until'|trans({'%date%': expires_at|date('d.m.Y H:i')}) }}
+{{ 'mail.valid_until'|trans({'%date%': expires_at|local_datetime}) }}
 
 {{ 'mail.ignore'|trans }}

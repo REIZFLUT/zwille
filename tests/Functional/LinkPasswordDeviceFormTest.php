@@ -103,6 +103,23 @@ final class LinkPasswordDeviceFormTest extends AppTestCase
         self::assertFalse($this->link('formtest')->hasPassword());
     }
 
+    public function testPasswordCardExplainsOnceAndKeepsTheRemoveBoxInside(): void
+    {
+        $id = $this->storedLink();
+        $crawler = $this->client->request('GET', '/links/'.$id.'/edit');
+        $card = $crawler->filter('.card')->reduce(static fn ($c): bool => str_contains($c->filter('h2')->count() > 0 ? $c->filter('h2')->text() : '', 'Passwortschutz'));
+        self::assertCount(1, $card);
+        self::assertCount(1, $card->filter('input[name="link[removePassword]"]'), 'the remove box sits inside the card');
+        self::assertSame(1, substr_count($crawler->html(), 'Leer lassen, um den Link offen'), 'the help text appears once');
+
+        // Without a password there is nothing to remove - and no stray box below the card.
+        $owner = $this->em()->find(User::class, $this->user->getId()) ?? self::fail('user');
+        $domain = $this->em()->getRepository(\App\Entity\Domain::class)->findOneBy(['hostname' => self::HOST]) ?? self::fail('domain');
+        $plain = $this->createLink($owner, $domain, 'plain');
+        $crawler = $this->client->request('GET', '/links/'.$plain->getId().'/edit');
+        self::assertCount(0, $crawler->filter('input[name="link[removePassword]"]'));
+    }
+
     public function testFormEditsAndRemovesDeviceRowsWithoutLosingOthers(): void
     {
         $id = $this->storedLink();

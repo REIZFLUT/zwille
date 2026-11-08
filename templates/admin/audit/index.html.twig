@@ -69,7 +69,7 @@
                     <tbody>
                         {% for entry in entries %}
                             <tr>
-                                <td class="small mono">{{ entry.occurredAt|date('d.m.Y H:i:s') }}</td>
+                                <td class="small mono">{{ entry.occurredAt|local_datetime(true) }}</td>
                                 <td><span class="badge">{{ audit.action_label(entry.action) }}</span></td>
                                 <td class="hide-sm small">
                                     {% if entry.actorLabel %}{{ entry.actorLabel }}{% else %}<span class="muted">{{ 'audit.anonymous'|trans }}</span>{% endif %}

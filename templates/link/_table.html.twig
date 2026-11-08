@@ -64,9 +64,9 @@
                         </td>
                         {% if bulk %}<td class="hide-sm target-cell"><span class="truncate muted small" title="{{ link.targetUrl }}">{{ link.title ?? link.targetUrl }}</span>{% if link.title %}<span class="truncate muted small">{{ link.targetUrl }}</span>{% endif %}</td>{% endif %}
                         {% if show_owner %}<td class="hide-sm small nowrap">{{ link.owner.displayName }}</td>{% endif %}
-                        <td class="num">{{ link.clickCount|number_format(0, ',', '.') }}</td>
-                        {% if bulk %}<td class="hide-md small muted nowrap">{{ link.lastClickAt ? link.lastClickAt|date('d.m.Y H:i') : '–' }}</td>{% endif %}
-                        <td class="hide-sm small muted nowrap">{{ link.createdAt|date('d.m.Y') }}</td>
+                        <td class="num">{{ link.clickCount|local_number }}</td>
+                        {% if bulk %}<td class="hide-md small muted nowrap">{{ link.lastClickAt ? link.lastClickAt|local_datetime : '–' }}</td>{% endif %}
+                        <td class="hide-sm small muted nowrap">{{ link.createdAt|local_date }}</td>
                         <td class="nowrap">
                             <div class="row-actions">
                                 <button type="button" class="btn btn-sm btn-ghost btn-icon" data-copy="{{ link.shortUrl }}" data-copied-label="✓" aria-label="{{ 'action.copy_link'|trans({'%link%': link.domain.displayName ~ '/' ~ link.code}) }}" title="{{ 'action.copy'|trans }}">{{ ui.icon('copy') }}</button>

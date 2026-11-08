@@ -113,10 +113,10 @@
                                             {{ 'agent.kind_personal'|trans }}
                                         {% endif %}
                                     </td>
-                                    <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|date('d.m.Y H:i') : '–' }}</td>
+                                    <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|local_datetime : '–' }}</td>
                                     <td class="hide-sm small">
                                         {% if token.expiresAt %}
-                                            <span class="{{ token.expired ? 'badge badge-danger' }}">{{ token.expiresAt|date('d.m.Y') }}</span>
+                                            <span class="{{ token.expired ? 'badge badge-danger' }}">{{ token.expiresAt|local_date }}</span>
                                         {% else %}–{% endif %}
                                     </td>
                                     <td>

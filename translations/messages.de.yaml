@@ -634,6 +634,7 @@ redirect.exhausted.text: Für diesen Kurzlink ist die maximale Anzahl an Klicks 
 link.password: Passwortschutz
 link.password_help: 'Leer lassen, um den Link offen bzw. das bisherige Passwort unverändert zu lassen. Mit Passwort sehen Besucher zuerst ein Formular; das Ziel wird erst nach der richtigen Eingabe verraten.'
 link.password_set: 'Für diesen Link ist ein Passwort gesetzt. Ein neues Passwort ersetzt es; zum Entfernen das Kästchen ankreuzen.'
+link.password_field: Passwort
 link.remove_password: Passwortschutz entfernen
 device_targets.label: Geräte-Ziele
 device_targets.help: 'Je Gerät ein eigenes Ziel. Ohne Eintrag gilt die Sprach- bzw. Standardadresse; Bots und unbekannte Geräte bekommen das Desktop-Ziel.'

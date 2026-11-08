@@ -76,11 +76,11 @@
                     <dt>{{ 'link.redirect_type'|trans }}</dt>
                     <dd>{{ ('link.redirect.' ~ link.redirectType)|trans }}</dd>
                     <dt>{{ 'link.starts_at'|trans }}</dt>
-                    <dd>{{ link.startsAt ? link.startsAt|date('d.m.Y H:i') : '–' }}</dd>
+                    <dd>{{ link.startsAt ? link.startsAt|local_datetime : '–' }}</dd>
                     <dt>{{ 'link.expires_at'|trans }}</dt>
-                    <dd>{{ link.expiresAt ? link.expiresAt|date('d.m.Y H:i') : '–' }}</dd>
+                    <dd>{{ link.expiresAt ? link.expiresAt|local_datetime : '–' }}</dd>
                     <dt>{{ 'link.max_clicks'|trans }}</dt>
-                    <dd>{{ link.maxClicks ? link.maxClicks|number_format(0, ',', '.') : ('link.max_clicks_unlimited'|trans) }}</dd>
+                    <dd>{{ link.maxClicks ? link.maxClicks|local_number : ('link.max_clicks_unlimited'|trans) }}</dd>
                     {% if link.fallbackUrl %}
                         <dt>{{ 'link.fallback_url'|trans }}</dt>
                         <dd><a href="{{ link.fallbackUrl }}" rel="noopener noreferrer" target="_blank">{{ link.fallbackUrl }}</a></dd>
@@ -88,11 +88,11 @@
                     <dt>{{ 'links.col.owner'|trans }}</dt>
                     <dd>{{ link.owner.displayName }}</dd>
                     <dt>{{ 'links.col.created'|trans }}</dt>
-                    <dd>{{ link.createdAt|date('d.m.Y H:i') }}</dd>
+                    <dd>{{ link.createdAt|local_datetime }}</dd>
                     <dt>{{ 'link.last_click'|trans }}</dt>
-                    <dd>{{ link.lastClickAt ? link.lastClickAt|date('d.m.Y H:i') : '–' }}</dd>
+                    <dd>{{ link.lastClickAt ? link.lastClickAt|local_datetime : '–' }}</dd>
                     <dt>{{ 'link.total_clicks'|trans }}</dt>
-                    <dd>{{ link.clickCount|number_format(0, ',', '.') }}</dd>
+                    <dd>{{ link.clickCount|local_number }}</dd>
                 </dl>
             </div>
         </div>

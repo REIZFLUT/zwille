@@ -70,7 +70,7 @@
                                         </form>
                                     </td>
                                     <td class="num"><a href="{{ path('app_links', {tag: tag.id}) }}">{{ total.links }}</a></td>
-                                    <td class="num">{{ total.clicks|number_format(0, ',', '.') }}</td>
+                                    <td class="num">{{ total.clicks|local_number }}</td>
                                     <td class="nowrap">
                                         <div class="row-actions">
                                             <a class="btn btn-sm btn-ghost btn-icon" href="{{ path('app_links', {tag: tag.id}) }}" title="{{ 'tag.show_links'|trans }}">{{ ui.icon('link') }}</a>

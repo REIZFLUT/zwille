@@ -91,7 +91,7 @@ final readonly class DbBackupCommand
             return Command::FAILURE;
         }
 
-        $io->success(\sprintf('Backup written to %s (%s KB).', $target, number_format((int) filesize($target) / 1024, 0, ',', '.')));
+        $io->success(\sprintf('Backup written to %s (%s KB).', $target, number_format((int) filesize($target) / 1024)));
 
         return Command::SUCCESS;
     }
@@ -183,7 +183,7 @@ final readonly class DbBackupCommand
             return Command::FAILURE;
         }
 
-        $io->success(\sprintf('Backup written to %s (%s KB).', $target, number_format((int) filesize($target) / 1024, 0, ',', '.')));
+        $io->success(\sprintf('Backup written to %s (%s KB).', $target, number_format((int) filesize($target) / 1024)));
 
         return Command::SUCCESS;
     }

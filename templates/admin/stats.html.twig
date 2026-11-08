@@ -24,7 +24,7 @@
                                 <tr>
                                     <td class="link-cell"><a class="short truncate" href="{{ path('app_link_show', {id: row.link.id}) }}">{{ row.link.domain.displayName }}/{{ row.link.code }}</a><span class="target truncate">{{ row.link.title ?? row.link.targetUrl }}</span></td>
                                     <td class="hide-sm small">{{ row.link.owner.displayName }}</td>
-                                    <td class="num">{{ row.clicks|number_format(0, ',', '.') }}</td>
+                                    <td class="num">{{ row.clicks|local_number }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

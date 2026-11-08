@@ -11,7 +11,7 @@
                     <p style="margin:0 0 22px;">
                         {% set palette = accent_palette() %}<a href="{{ url }}" style="display:inline-block;background:{{ palette.accent }};color:{{ palette.ink }};text-decoration:none;padding:11px 20px;border-radius:8px;font-weight:600;">{{ ('mail.' ~ purpose ~ '.button')|trans }}</a>
                     </p>
-                    <p style="margin:0 0 6px;font-size:13px;color:#6b6775;">{{ 'mail.valid_until'|trans({'%date%': expires_at|date('d.m.Y H:i')}) }}</p>
+                    <p style="margin:0 0 6px;font-size:13px;color:#6b6775;">{{ 'mail.valid_until'|trans({'%date%': expires_at|local_datetime}) }}</p>
                     <p style="margin:0;font-size:13px;color:#6b6775;word-break:break-all;">{{ url }}</p>
                 </td></tr>
             </table>

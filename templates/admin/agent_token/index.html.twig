@@ -55,9 +55,9 @@
                                         {% if token.targetHosts is not empty %}<div class="muted">{{ 'agent.targets_short'|trans }}: {{ token.targetHosts|join(', ') }}</div>{% endif %}
                                         {% if token.allowedIps is not empty %}<div class="muted">{{ 'agent.ips_short'|trans }}: {{ token.allowedIps|join(', ') }}</div>{% endif %}
                                     </td>
-                                    <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|date('d.m.Y H:i') : '–' }}</td>
+                                    <td class="hide-sm small muted">{{ token.lastUsedAt ? token.lastUsedAt|local_datetime : '–' }}</td>
                                     <td class="hide-sm small">
-                                        <span class="{{ token.expired ? 'badge badge-danger' }}">{{ token.expiresAt ? token.expiresAt|date('d.m.Y') : '–' }}</span>
+                                        <span class="{{ token.expired ? 'badge badge-danger' }}">{{ token.expiresAt ? token.expiresAt|local_date : '–' }}</span>
                                     </td>
                                     <td>
                                         {% if token.revoked %}

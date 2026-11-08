@@ -79,13 +79,15 @@
             {% if form.password is defined %}
                 <div class="card">
                     <h2>{{ 'link.password'|trans }}</h2>
-                    <p class="small muted">{{ 'link.password_help'|trans }}</p>
                     {% if form.vars.data.hasPassword %}
-                        <p class="help">{{ 'link.password_set'|trans }}</p>
+                        <p class="small muted">{{ 'link.password_set'|trans }}</p>
                     {% endif %}
                     {{ form_row(form.password) }}
                     {% if form.vars.data.hasPassword %}
                         {{ form_row(form.removePassword) }}
+                    {% else %}
+                        {# Nothing to remove; without this form_rest() would print the box below the card. #}
+                        {% do form.removePassword.setRendered %}
                     {% endif %}
                 </div>
             {% endif %}
