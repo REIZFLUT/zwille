@@ -9,6 +9,7 @@ use App\Entity\Domain;
 use App\Entity\Link;
 use App\Event\Redirect\RedirectResolvingEvent;
 use App\Event\Redirect\RedirectUnresolvedEvent;
+use App\EventListener\SecurityHeadersListener;
 use App\Link\LinkAvailability;
 use App\Link\LinkPassword;
 use App\Link\LinkTargetResolver;
@@ -229,6 +230,11 @@ final class RedirectController extends AbstractController
     private function unlockForm(Request $request, Link $link, Domain $domain, bool $error = false): Response
     {
         $token = $this->tokens->issue($link->getCode());
+        // The form posts to this short link, which answers a correct password with a redirect to
+        // the target. Browsers check that redirect against form-action as well, so 'self' alone
+        // blocks the unlock. The exact target is not known here (language, device, plugins
+        // decide it after the POST); any http(s) destination is allowed, on this page only.
+        $request->attributes->set(SecurityHeadersListener::FORM_ACTION_ATTRIBUTE, ['https:', 'http:']);
 
         return $this->page('redirect/password.html.twig', Response::HTTP_OK, [
             'domain' => $domain,

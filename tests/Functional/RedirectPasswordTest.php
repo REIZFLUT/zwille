@@ -49,6 +49,23 @@ final class RedirectPasswordTest extends AppTestCase
         self::assertNotSame('', (string) $crawler->filter('input[name="mac"]')->attr('value'));
     }
 
+    /**
+     * Browsers apply CSP form-action to the redirect that follows the form, too. With only
+     * 'self' a correct password ended in a blocked navigation instead of the target.
+     */
+    public function testPasswordPageAllowsTheRedirectAfterTheForm(): void
+    {
+        $this->protectedLink('csp');
+        $this->shortRequest(self::HOST, '/csp');
+        self::assertResponseIsSuccessful();
+        $csp = (string) $this->client->getResponse()->headers->get('Content-Security-Policy');
+        self::assertMatchesRegularExpression("/form-action 'self' https: http:(;|$)/", $csp);
+
+        // Everywhere else form-action stays strict.
+        $this->client->request('GET', '/login');
+        self::assertStringContainsString("form-action 'self';", (string) $this->client->getResponse()->headers->get('Content-Security-Policy'));
+    }
+
     public function testWrongPasswordRerendersWithOneErrorAndCountsAgainstTheLimiter(): void
     {
         $this->useGate(2);

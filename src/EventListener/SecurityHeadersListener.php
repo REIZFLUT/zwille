@@ -18,6 +18,13 @@ final class SecurityHeadersListener
 {
     public const string NONCE_ATTRIBUTE = '_csp_nonce';
 
+    /**
+     * Extra form-action sources for this response (list of strings). Browsers apply form-action
+     * to the redirects that follow a form submission too, so a form that ends in a redirect to
+     * an external site (the password gate of a short link) needs that site allowed here.
+     */
+    public const string FORM_ACTION_ATTRIBUTE = '_csp_form_action';
+
     public static function nonce(Request $request): string
     {
         $nonce = $request->attributes->get(self::NONCE_ATTRIBUTE);
@@ -59,8 +66,16 @@ final class SecurityHeadersListener
             "font-src 'self'",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            implode(' ', ["form-action 'self'", ...self::extraFormActions($request)]),
             "frame-ancestors 'none'",
         ]));
+    }
+
+    /** @return list<string> */
+    private static function extraFormActions(Request $request): array
+    {
+        $sources = $request->attributes->get(self::FORM_ACTION_ATTRIBUTE, []);
+
+        return \is_array($sources) ? array_values(array_filter($sources, 'is_string')) : [];
     }
 }
