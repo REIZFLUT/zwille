@@ -1,6 +1,6 @@
 # Installation (klassisches PHP-Hosting)
 
-EatMyShort.Link braucht standardmäßig keinen Datenbankserver, keinen Node-Build und
+Zwille braucht standardmäßig keinen Datenbankserver, keinen Node-Build und
 keinen Queue-Worker: PHP-FPM, ein Webserver und eine SQLite-Datei reichen. Wer trotzdem
 einen Datenbankserver betreiben will, schaltet in der `.env` auf MariaDB/MySQL um - siehe
 *Datenbank wählen*.
@@ -30,8 +30,8 @@ Alle Namen zeigen per DNS (A/AAAA oder CNAME) auf denselben Server und landen im
 
 ```bash
 cd /var/www
-git clone https://github.com/REIZFLUT/eatmyshort.link.git eatmyshort
-cd eatmyshort
+git clone https://github.com/REIZFLUT/zwille.git zwille
+cd zwille
 cp .env.example .env                            # Werte anpassen, siehe unten
 composer install --no-dev --optimize-autoloader --classmap-authoritative
 php bin/console doctrine:migrations:migrate --no-interaction
@@ -41,7 +41,7 @@ php bin/console app:domain:add go.firma.de --root=https://www.firma.de --default
 ```
 
 `var/` (Cache, Logs in `var/log`, Sessions in `var/sessions`,
-`var/data/eatmyshort.sqlite` samt `-wal`/`-shm`) muss für den PHP-FPM-Nutzer
+`var/data/zwille.sqlite` samt `-wal`/`-shm`) muss für den PHP-FPM-Nutzer
 gehören und beschreibbar sein:
 
 ```bash
@@ -95,7 +95,7 @@ versionierten `.env`-Datei auf dem Server.
 aus der eingecheckten `.env`. `APP_SECRET` aus der alten `.env` in die eigene `.env.local`
 übernehmen (oder als echte Umgebungsvariable setzen) und **unverändert** lassen, sonst sind
 die gespeicherten TOTP-Schlüssel nicht mehr lesbar. `DATABASE_URL` ist inzwischen optional:
-ohne sie läuft die App auf SQLite in `var/data/eatmyshort.sqlite`. Wer die bisherige
+ohne sie läuft die App auf SQLite in `var/data/zwille.sqlite`. Wer die bisherige
 Datenbank behalten will, übernimmt den alten Wert entweder weiter als `DATABASE_URL` oder
 stellt auf die `DB_*`-Variablen um.
 
@@ -114,7 +114,7 @@ stellt auf die `DB_*`-Variablen um.
 | `DB_SOCKET` | MariaDB/MySQL über Unix-Socket – ersetzt `DB_HOST`/`DB_PORT` |
 | `DB_CHARSET` | Zeichensatz, Standard `utf8mb4` |
 | `DB_SERVER_VERSION` | optional: Serverversion festnageln (z. B. `mariadb-11.4.0`), sonst wird sie beim Verbinden erkannt |
-| `DATABASE_URL` | optionaler Override; hat **immer** Vorrang vor allen `DB_*`-Werten. Ohne DATABASE_URL wird die DSN aus den `DB_*`-Variablen gebaut (Default: SQLite unter `var/data/eatmyshort.sqlite`) |
+| `DATABASE_URL` | optionaler Override; hat **immer** Vorrang vor allen `DB_*`-Werten. Ohne DATABASE_URL wird die DSN aus den `DB_*`-Variablen gebaut (Default: SQLite unter `var/data/zwille.sqlite`) |
 | `MAILER_DSN`, `MAILER_FROM` | z. B. `smtp://user:pass@smtp.firma.de:587` |
 | `ADMIN_IP_ALLOWLIST` | IPs/Netze, die `/admin` **immer** öffnen dürfen (Aussperr-Schutz), kommagetrennt |
 | `TRUSTED_PROXIES` | nur hinter Reverse-Proxy/Load-Balancer: **nur dessen IPs** (z. B. `10.0.0.5,10.0.0.6`), niemals `REMOTE_ADDR`. Sonst glaubt die App jedem Client-Header und die IP-Sperre ist mit einem gefälschten `X-Forwarded-For` umgehbar. Leer = keine Proxys. |
@@ -125,15 +125,15 @@ stellt auf die `DB_*`-Variablen um.
 
 ## Datenbank wählen
 
-Ohne weitere Angabe läuft die App auf SQLite (`var/data/eatmyshort.sqlite`). Wer einen
+Ohne weitere Angabe läuft die App auf SQLite (`var/data/zwille.sqlite`). Wer einen
 Datenbankserver will, stellt in der `.env` auf MariaDB/MySQL um:
 
 ```ini
 DB_CONNECTION=mariadb        # sqlite (Default) | mysql | mariadb (Aliase, derselbe Treiber)
-DB_DATABASE=eatmyshort
+DB_DATABASE=zwille
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_USERNAME=eatmyshort
+DB_USERNAME=zwille
 DB_PASSWORD=...
 DB_CHARSET=utf8mb4
 ```
@@ -157,9 +157,9 @@ Regeln:
 Datenbank und Nutzer anlegen:
 
 ```sql
-CREATE DATABASE eatmyshort CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'eatmyshort'@'localhost' IDENTIFIED BY '<passwort>';
-GRANT ALL PRIVILEGES ON eatmyshort.* TO 'eatmyshort'@'localhost';
+CREATE DATABASE zwille CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'zwille'@'localhost' IDENTIFIED BY '<passwort>';
+GRANT ALL PRIVILEGES ON zwille.* TO 'zwille'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
@@ -190,17 +190,17 @@ HTTP leitet auf HTTPS um.
 
 ```cron
 # Klicks älter als CLICK_RETENTION_DAYS löschen
-15 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:clicks:prune --quiet
+15 3 * * *  www-data  php /var/www/zwille/bin/console app:clicks:prune --quiet
 # Audit-Log älter als AUDIT_RETENTION_DAYS löschen
-20 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:audit:prune --quiet
+20 3 * * *  www-data  php /var/www/zwille/bin/console app:audit:prune --quiet
 # Sicherung der Datenbank (konsistent im laufenden Betrieb), 14 Tage behalten.
 # SQLite-Sicherungen enden auf .sqlite, MariaDB/MySQL-Sicherungen auf .sql.gz.
-30 3 * * *  www-data  php /var/www/eatmyshort/bin/console app:db:backup --quiet && find /var/www/eatmyshort/var/backup \( -name '*.sqlite' -o -name '*.sql.gz' \) -mtime +14 -delete
+30 3 * * *  www-data  php /var/www/zwille/bin/console app:db:backup --quiet && find /var/www/zwille/var/backup \( -name '*.sqlite' -o -name '*.sql.gz' \) -mtime +14 -delete
 # Abgelaufene Cache-Einträge entfernen (u. a. die Zähler des Tracking-Rate-Limiters)
-45 3 * * *  www-data  php /var/www/eatmyshort/bin/console cache:pool:prune --quiet
+45 3 * * *  www-data  php /var/www/zwille/bin/console cache:pool:prune --quiet
 # GeoIP-Datenbank monatlich erneuern (DB-IP Lite, CC BY 4.0). Erst laden, dann ersetzen:
 # scheitert der Download, bleibt die alte Datei liegen (kein leeres .mmdb).
-10 4 1 * *  www-data  cd /var/www/eatmyshort/var/geoip && curl -fsSL -o dbip-new.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$(date +\%Y-\%m).mmdb.gz" && gunzip -f dbip-new.mmdb.gz && mv dbip-new.mmdb dbip-country-lite.mmdb && php /var/www/eatmyshort/bin/console cache:clear --env=prod --quiet
+10 4 1 * *  www-data  cd /var/www/zwille/var/geoip && curl -fsSL -o dbip-new.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$(date +\%Y-\%m).mmdb.gz" && gunzip -f dbip-new.mmdb.gz && mv dbip-new.mmdb dbip-country-lite.mmdb && php /var/www/zwille/bin/console cache:clear --env=prod --quiet
 ```
 
 ### GeoIP-Datenbank (optional)
@@ -212,7 +212,7 @@ gefragt. Ohne Datei bleiben die Länder leer und *Admin → Einstellungen* zeigt
 mkdir -p var/geoip
 curl -fsSL "https://download.db-ip.com/free/dbip-country-lite-$(date +%Y-%m).mmdb.gz" \
   | gunzip -c > var/geoip/dbip-country-lite.mmdb
-# GEOIP_DATABASE_PATH=/var/www/eatmyshort/var/geoip/dbip-country-lite.mmdb in .env.local
+# GEOIP_DATABASE_PATH=/var/www/zwille/var/geoip/dbip-country-lite.mmdb in .env.local
 ```
 
 DB-IP Lite steht unter CC BY 4.0 und verlangt die Angabe „IP Geolocation by DB-IP";
@@ -259,6 +259,24 @@ Stands neu und leert den Prod-Cache; **Migrationen werden nicht zurückgerollt**
 (das Skript weist darauf hin). Der Healthcheck nutzt `HEALTH_URL` oder leitet die URL
 aus `DEFAULT_URI` ab (Standard `http://127.0.0.1/healthz`).
 
+### Umstieg von EatMyShort.Link
+
+Das Projekt hieß früher EatMyShort.Link. Ein normales Update genügt; dabei gilt:
+
+- **Datenbank:** Wer sich auf den Standardpfad verlassen hat (kein `DB_DATABASE`), behält
+  `var/data/eatmyshort.sqlite` – sie wird weiter benutzt, solange es keine
+  `var/data/zwille.sqlite` gibt. Umbenennen ist möglich, aber nicht nötig. Gesetzte
+  `DB_*`- und `DATABASE_URL`-Werte bleiben ohnehin unverändert.
+- **Anmeldung:** Das Session-Cookie heißt jetzt `zwille_session`; alle sind einmal abgemeldet.
+- **API-Tokens:** Neue Tokens beginnen mit `zwl_` bzw. `zwa_`. Ältere Tokens mit `emsl_`/`emsa_`
+  funktionieren unverändert weiter.
+- **Webhook-Plugin:** Die Signatur kommt jetzt als `X-Zwille-Signature`; `X-Emsl-Signature`
+  wird bis auf Weiteres zusätzlich gesendet.
+- **Titel:** Wer den Titel in den Einstellungen nie geändert hat, sieht jetzt „Zwille“.
+  Eigene Titel bleiben.
+- **2FA:** Bestehende Einträge in Authenticator-Apps behalten ihre alte Bezeichnung und
+  funktionieren weiter; neue Einrichtungen erscheinen als „Zwille“.
+
 Release-Verzeichnisse mit symlink-Umschaltung sind die sauberere Variante: Der
 Wechsel ist atomar und ein Rollback braucht kein `git reset`. Dieses Projekt bleibt
 beim In-Place-Layout, weil das Hosting so eingerichtet ist.
@@ -302,7 +320,7 @@ Besucher wartet darauf nicht.
 Für Produktion:
 
 - `opcache.validate_timestamps=0` (nach jedem Deploy PHP-FPM neu laden) und
-  `opcache.preload=/var/www/eatmyshort/config/preload.php`, `opcache.preload_user=www-data`
+  `opcache.preload=/var/www/zwille/config/preload.php`, `opcache.preload_user=www-data`
 - kein Xdebug auf dem Server
 - `pm.max_children` passend zu Kernen und RAM (je Worker ca. 30–40 MB)
 - APCu aktivieren (wird für Systemcaches automatisch genutzt)

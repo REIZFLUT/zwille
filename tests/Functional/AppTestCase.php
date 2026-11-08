@@ -14,7 +14,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 abstract class AppTestCase extends WebTestCase
 {
-    protected const string ADMIN_HOST = 'admin.emsl.test';
+    protected const string ADMIN_HOST = 'admin.zwille.test';
     protected const string PASSWORD = 'correct horse battery staple';
 
     protected KernelBrowser $client;

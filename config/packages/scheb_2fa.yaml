@@ -5,7 +5,7 @@ scheb_two_factor:
         - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
     totp:
         enabled: true
-        issuer: 'EatMyShort.Link'
+        issuer: 'Zwille'
         server_name: '%env(first_host:APP_ADMIN_HOSTS)%'
         leeway: 15
         template: security/2fa_form.html.twig

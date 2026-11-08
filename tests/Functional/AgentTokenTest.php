@@ -18,7 +18,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
 /**
- * Agent tokens ("emsa_…"): never admin, only their scopes, optional limits to domains,
+ * Agent tokens ("zwa_…"): never admin, only their scopes, optional limits to domains,
  * target hosts and client addresses, an extra write budget, revocation and a kill switch.
  */
 final class AgentTokenTest extends AppTestCase

@@ -28,7 +28,14 @@ final readonly class DatabaseUrlComposer
     public const array DRIVERS = ['sqlite', 'mysql', 'mariadb'];
 
     /** SQLite file used when neither DATABASE_URL nor DB_DATABASE is set. */
-    public const string DEFAULT_SQLITE_PATH = 'var/data/eatmyshort.sqlite';
+    public const string DEFAULT_SQLITE_PATH = 'var/data/zwille.sqlite';
+
+    /**
+     * Default SQLite file from before the rename to Zwille (formerly EatMyShort.Link). An
+     * install that relied on the default keeps using it as long as the new file does not
+     * exist, so an update never silently switches to an empty database.
+     */
+    public const string LEGACY_SQLITE_PATH = 'var/data/eatmyshort.sqlite';
 
     private const string DEFAULT_HOST = '127.0.0.1';
     private const string DEFAULT_PORT = '3306';
@@ -94,7 +101,7 @@ final readonly class DatabaseUrlComposer
      */
     private function sqliteUrl(callable $get): string
     {
-        $path = self::clean($get('DB_DATABASE')) ?? self::DEFAULT_SQLITE_PATH;
+        $path = self::clean($get('DB_DATABASE')) ?? $this->defaultSqlitePath();
 
         // A relative DB_DATABASE is resolved against the project directory; an absolute
         // path is used as-is. Either way the DSN carries an absolute path.
@@ -136,6 +143,16 @@ final readonly class DatabaseUrlComposer
             self::clean($get('DB_DATABASE')) ?? '',
             http_build_query($query, '', '&', \PHP_QUERY_RFC3986),
         );
+    }
+
+    private function defaultSqlitePath(): string
+    {
+        $base = rtrim($this->projectDir, '/').'/';
+        if (!is_file($base.self::DEFAULT_SQLITE_PATH) && is_file($base.self::LEGACY_SQLITE_PATH)) {
+            return self::LEGACY_SQLITE_PATH;
+        }
+
+        return self::DEFAULT_SQLITE_PATH;
     }
 
     private static function clean(?string $value): ?string

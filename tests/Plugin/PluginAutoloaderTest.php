@@ -19,7 +19,7 @@ final class PluginAutoloaderTest extends TestCase
     {
         // Fixed path on purpose: the Composer class loader is a process-wide singleton, so
         // reusing one directory keeps the "same prefix, same path" idempotency check stable.
-        $this->directory = sys_get_temp_dir().'/emsl-plugin-autoloader/'.self::PLUGIN;
+        $this->directory = sys_get_temp_dir().'/zwille-plugin-autoloader/'.self::PLUGIN;
         if (!is_dir($this->directory.'/src')) {
             mkdir($this->directory.'/src', 0o777, true);
         }

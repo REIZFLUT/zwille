@@ -1,6 +1,6 @@
 # Erweiterungen (Plugins)
 
-EatMyShort.Link lässt sich über Plugins erweitern, ohne den Kern anzufassen. Ein Plugin ist
+Zwille lässt sich über Plugins erweitern, ohne den Kern anzufassen. Ein Plugin ist
 ein Verzeichnis unter `plugins/`, das in `config/plugins.yaml` freigeschaltet wird. Es wird
 beim Boot in den Container und den Router eingebunden und arbeitet mit **typisierten
 Events** – nicht mit globalen Funktionen wie in klassischen PHP-Anwendungen.

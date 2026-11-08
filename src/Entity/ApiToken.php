@@ -18,16 +18,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  * once on creation.
  *
  * Two kinds exist:
- * - personal ("emsl_…"): acts exactly like its user, with every scope;
- * - agent ("emsa_…"): for AI agents and other automation. It never has admin rights, always
+ * - personal ("zwl_…"): acts exactly like its user, with every scope;
+ * - agent ("zwa_…"): for AI agents and other automation. It never has admin rights, always
  *   expires, carries only the scopes chosen when it was issued and can additionally be
  *   limited to domains, target hosts and client addresses.
  */
 #[ORM\Entity(repositoryClass: ApiTokenRepository::class)]
 class ApiToken
 {
-    public const string PREFIX = 'emsl_';
-    public const string AGENT_PREFIX = 'emsa_';
+    // Only used when issuing tokens: lookup goes by the hash of the whole token, so tokens
+    // issued before the rename to Zwille ("emsl_…"/"emsa_…") keep working.
+    public const string PREFIX = 'zwl_';
+    public const string AGENT_PREFIX = 'zwa_';
 
     public const string KIND_PERSONAL = 'personal';
     public const string KIND_AGENT = 'agent';

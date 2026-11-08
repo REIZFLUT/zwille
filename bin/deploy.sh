@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Deployment fuer EatMyShort.Link auf klassischem PHP-FPM-Hosting.
+# Deployment fuer Zwille auf klassischem PHP-FPM-Hosting.
 #
 # Ablauf: Vorpruefungen -> Datenbank-Backup -> Wartungsmodus -> git pull ->
 # composer install -> Migrationen -> Assets -> Cache -> PHP-FPM-Reload ->
@@ -57,7 +57,7 @@ run() {
 
 usage() {
     cat <<'EOF'
-Deployment fuer EatMyShort.Link (in-place).
+Deployment fuer Zwille (in-place).
 
 Aufruf: bin/deploy.sh [--dry-run]
 

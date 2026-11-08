@@ -32,10 +32,10 @@ $testEnv = [
     'APP_SECRET' => '$ecretf0rt3st',
     'DEFAULT_URI' => 'http://localhost',
     'DATABASE_URL' => $databaseUrl,
-    'APP_ADMIN_HOSTS' => 'admin.emsl.test',
+    'APP_ADMIN_HOSTS' => 'admin.zwille.test',
     'ADMIN_IP_ALLOWLIST' => '',
     'MAILER_DSN' => 'null://null',
-    'MAILER_FROM' => 'EatMyShort.Link <noreply@localhost>',
+    'MAILER_FROM' => 'Zwille <noreply@localhost>',
 ];
 foreach ($testEnv as $name => $value) {
     putenv($name.'='.$value);

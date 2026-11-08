@@ -15,7 +15,7 @@ use Webauthn\Bundle\Security\Http\Authenticator\WebauthnAuthenticator;
 final readonly class LoginSuccessListener
 {
     /** Session key with the factor that authenticated this session. */
-    public const string SESSION_AUTH_METHOD = '_emsl_auth_method';
+    public const string SESSION_AUTH_METHOD = '_zwille_auth_method';
     public const string METHOD_PASSWORD = 'password';
     public const string METHOD_PASSKEY = 'passkey';
 

@@ -1,5 +1,5 @@
 /*
- * EatMyShort.Link – one stylesheet, no build step.
+ * Zwille – one stylesheet, no build step.
  * /branding/theme.css sets --accent (admin setting) and the colours derived from it with
  * WCAG contrast (App\Branding\AccentPalette): --accent-ink for text on the accent and
  * --accent-text for the accent as text colour per theme. The values here are fallbacks.

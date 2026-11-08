@@ -17,7 +17,7 @@ never thrown: the click is already committed and nothing here may undo it.
 |---|---|---|
 | `url` | string | Target of the webhook. Without it the plugin does nothing (no request is made). |
 | `timeout` | float (default `2`) | Request timeout in seconds. |
-| `secret` | string (optional) | When set, each request carries `X-Emsl-Signature: sha256=<hmac>` over the raw body. |
+| `secret` | string (optional) | When set, each request carries `X-Zwille-Signature: sha256=<hmac>` over the raw body. The same value is also sent as `X-Emsl-Signature` (deprecated name from before the rename, will be dropped in a later major version). |
 | `headers` | map (optional) | Extra HTTP headers, e.g. an API key. |
 
 Payload (JSON):

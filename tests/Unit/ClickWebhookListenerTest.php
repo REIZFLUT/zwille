@@ -63,7 +63,9 @@ final class ClickWebhookListenerTest extends TestCase
         self::assertIsArray($headers);
         self::assertContains('Content-Type: application/json', $headers);
         self::assertContains('X-Api-Key: abc', $headers);
-        self::assertContains('X-Emsl-Signature: sha256='.hash_hmac('sha256', $body, 's3cr3t'), $headers);
+        $signature = 'sha256='.hash_hmac('sha256', $body, 's3cr3t');
+        self::assertContains('X-Zwille-Signature: '.$signature, $headers);
+        self::assertContains('X-Emsl-Signature: '.$signature, $headers, 'deprecated header still sent');
 
         self::assertSame([], $logger->getRecords(), 'a 2xx answer is not logged');
     }
@@ -92,7 +94,7 @@ final class ClickWebhookListenerTest extends TestCase
 
         self::assertIsArray($capturedHeaders);
         self::assertContains('Content-Type: application/json', $capturedHeaders);
-        $signature = array_filter($capturedHeaders, static fn (mixed $header): bool => str_starts_with((string) $header, 'X-Emsl-Signature:'));
+        $signature = array_filter($capturedHeaders, static fn (mixed $header): bool => (bool) preg_match('/^X-(Zwille|Emsl)-Signature:/', (string) $header));
         self::assertSame([], array_values($signature));
     }
 

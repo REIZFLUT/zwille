@@ -36,7 +36,7 @@ final class RedirectPasswordTest extends AppTestCase
         self::assertResponseStatusCodeSame(200);
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex');
         self::assertResponseHeaderSame('Cache-Control', 'no-store, private');
-        self::assertResponseNotHasCookie('emsl_session');
+        self::assertResponseNotHasCookie('zwille_session');
 
         $html = (string) $this->client->getResponse()->getContent();
         self::assertStringNotContainsString('https://www.example.com/secret', $html, 'the target must not be in the HTML');

@@ -13,7 +13,7 @@ use Symfony\Component\Security\Http\AccessToken\AccessTokenHandlerInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 
 /**
- * Resolves "Authorization: Bearer emsl_…|emsa_…" to its user.
+ * Resolves "Authorization: Bearer zwl_…|zwa_… (or pre-rename emsl_…|emsa_…)" to its user.
  *
  * Every refusal is the same 401 ("Invalid API token."), whatever the reason - expired,
  * revoked, wrong client address, agents switched off - so a stolen token does not tell its

@@ -11,20 +11,44 @@ use PHPUnit\Framework\TestCase;
 
 final class DatabaseUrlComposerTest extends TestCase
 {
-    private const string PROJECT_DIR = '/srv/eatmyshort';
+    private const string PROJECT_DIR = '/srv/zwille';
 
     public function testDefaultsToTheProjectSqliteFile(): void
     {
         self::assertSame(
-            'sqlite:////srv/eatmyshort/var/data/eatmyshort.sqlite',
+            'sqlite:////srv/zwille/var/data/zwille.sqlite',
             $this->compose([]),
         );
+    }
+
+    public function testDefaultKeepsUsingTheFileFromBeforeTheRename(): void
+    {
+        $dir = sys_get_temp_dir().'/zwille-dbcomposer-'.bin2hex(random_bytes(4));
+        mkdir($dir.'/var/data', 0o777, true);
+        try {
+            touch($dir.'/var/data/eatmyshort.sqlite');
+            $composer = new DatabaseUrlComposer($dir);
+            self::assertSame('sqlite:///'.$dir.'/var/data/eatmyshort.sqlite', $composer->composeFrom([]));
+
+            // Once the new default exists it wins.
+            touch($dir.'/var/data/zwille.sqlite');
+            self::assertSame('sqlite:///'.$dir.'/var/data/zwille.sqlite', $composer->composeFrom([]));
+
+            // An explicit DB_DATABASE is never redirected.
+            unlink($dir.'/var/data/zwille.sqlite');
+            self::assertSame('sqlite:///'.$dir.'/var/data/zwille.sqlite', $composer->composeFrom(['DB_DATABASE' => 'var/data/zwille.sqlite']));
+        } finally {
+            array_map('unlink', glob($dir.'/var/data/*') ?: []);
+            rmdir($dir.'/var/data');
+            rmdir($dir.'/var');
+            rmdir($dir);
+        }
     }
 
     public function testSqliteRelativePathIsResolvedAgainstTheProjectDirectory(): void
     {
         self::assertSame(
-            'sqlite:////srv/eatmyshort/data/other.sqlite',
+            'sqlite:////srv/zwille/data/other.sqlite',
             $this->compose(['DB_DATABASE' => 'data/other.sqlite']),
         );
     }
@@ -48,10 +72,10 @@ final class DatabaseUrlComposerTest extends TestCase
     public function testMysqlCarriesHostPortDatabaseAndCharset(): void
     {
         self::assertSame(
-            'mysql://root:@db.internal:3307/eatmyshort?charset=latin1',
+            'mysql://root:@db.internal:3307/zwille?charset=latin1',
             $this->compose([
                 'DB_CONNECTION' => 'mysql',
-                'DB_DATABASE' => 'eatmyshort',
+                'DB_DATABASE' => 'zwille',
                 'DB_HOST' => 'db.internal',
                 'DB_PORT' => '3307',
                 'DB_CHARSET' => 'latin1',
@@ -62,10 +86,10 @@ final class DatabaseUrlComposerTest extends TestCase
     public function testUsernameAndPasswordAreUrlEncoded(): void
     {
         self::assertSame(
-            'mysql://us%20er%40x:p%40ss%3Aw%2Frd%23@127.0.0.1:3306/eatmyshort?charset=utf8mb4',
+            'mysql://us%20er%40x:p%40ss%3Aw%2Frd%23@127.0.0.1:3306/zwille?charset=utf8mb4',
             $this->compose([
                 'DB_CONNECTION' => 'mysql',
-                'DB_DATABASE' => 'eatmyshort',
+                'DB_DATABASE' => 'zwille',
                 'DB_USERNAME' => 'us er@x',
                 'DB_PASSWORD' => 'p@ss:w/rd#',
             ]),
@@ -75,10 +99,10 @@ final class DatabaseUrlComposerTest extends TestCase
     public function testEmptyPasswordStaysEmpty(): void
     {
         self::assertSame(
-            'mysql://app:@127.0.0.1:3306/eatmyshort?charset=utf8mb4',
+            'mysql://app:@127.0.0.1:3306/zwille?charset=utf8mb4',
             $this->compose([
                 'DB_CONNECTION' => 'mysql',
-                'DB_DATABASE' => 'eatmyshort',
+                'DB_DATABASE' => 'zwille',
                 'DB_USERNAME' => 'app',
                 'DB_PASSWORD' => '',
             ]),
@@ -88,7 +112,7 @@ final class DatabaseUrlComposerTest extends TestCase
     public function testMariaDbIsAnAliasForTheSameDriver(): void
     {
         $environment = [
-            'DB_DATABASE' => 'eatmyshort',
+            'DB_DATABASE' => 'zwille',
             'DB_HOST' => 'db.internal',
             'DB_USERNAME' => 'app',
             'DB_PASSWORD' => 'secret',
@@ -103,10 +127,10 @@ final class DatabaseUrlComposerTest extends TestCase
     public function testUnixSocketReplacesHostAndPort(): void
     {
         self::assertSame(
-            'mysql://root:@localhost/eatmyshort?charset=utf8mb4&unix_socket=%2Fvar%2Frun%2Fmysqld%2Fmysqld.sock',
+            'mysql://root:@localhost/zwille?charset=utf8mb4&unix_socket=%2Fvar%2Frun%2Fmysqld%2Fmysqld.sock',
             $this->compose([
                 'DB_CONNECTION' => 'mariadb',
-                'DB_DATABASE' => 'eatmyshort',
+                'DB_DATABASE' => 'zwille',
                 'DB_HOST' => 'ignored.example.com',
                 'DB_PORT' => '9999',
                 'DB_SOCKET' => '/var/run/mysqld/mysqld.sock',
@@ -128,8 +152,8 @@ final class DatabaseUrlComposerTest extends TestCase
      */
     public static function blankValuesFallBackToDefaultsProvider(): iterable
     {
-        yield 'blank connection' => [['DB_CONNECTION' => ''], 'sqlite:////srv/eatmyshort/var/data/eatmyshort.sqlite'];
-        yield 'blank sqlite path' => [['DB_DATABASE' => ''], 'sqlite:////srv/eatmyshort/var/data/eatmyshort.sqlite'];
+        yield 'blank connection' => [['DB_CONNECTION' => ''], 'sqlite:////srv/zwille/var/data/zwille.sqlite'];
+        yield 'blank sqlite path' => [['DB_DATABASE' => ''], 'sqlite:////srv/zwille/var/data/zwille.sqlite'];
         yield 'blank host' => [['DB_CONNECTION' => 'mysql', 'DB_HOST' => ''], 'mysql://root:@127.0.0.1:3306/?charset=utf8mb4'];
         yield 'blank charset' => [['DB_CONNECTION' => 'mysql', 'DB_CHARSET' => ''], 'mysql://root:@127.0.0.1:3306/?charset=utf8mb4'];
     }
@@ -196,17 +220,17 @@ final class DatabaseUrlComposerTest extends TestCase
             [],
             [
                 'driver' => 'pdo_sqlite',
-                'path' => '/srv/eatmyshort/var/data/eatmyshort.sqlite',
+                'path' => '/srv/zwille/var/data/zwille.sqlite',
             ],
         ];
         yield 'sqlite relative' => [
             ['DB_DATABASE' => 'data/x.sqlite'],
-            ['driver' => 'pdo_sqlite', 'path' => '/srv/eatmyshort/data/x.sqlite'],
+            ['driver' => 'pdo_sqlite', 'path' => '/srv/zwille/data/x.sqlite'],
         ];
         yield 'mysql with encoded credentials' => [
             [
                 'DB_CONNECTION' => 'mysql',
-                'DB_DATABASE' => 'eatmyshort',
+                'DB_DATABASE' => 'zwille',
                 'DB_USERNAME' => 'us er@x',
                 'DB_PASSWORD' => 'p@ss:w/rd#',
             ],
@@ -216,16 +240,16 @@ final class DatabaseUrlComposerTest extends TestCase
                 'port' => 3306,
                 'user' => 'us er@x',
                 'password' => 'p@ss:w/rd#',
-                'dbname' => 'eatmyshort',
+                'dbname' => 'zwille',
                 'charset' => 'utf8mb4',
             ],
         ];
         yield 'mysql over a unix socket' => [
-            ['DB_CONNECTION' => 'mariadb', 'DB_DATABASE' => 'eatmyshort', 'DB_SOCKET' => '/var/run/mysqld/mysqld.sock'],
+            ['DB_CONNECTION' => 'mariadb', 'DB_DATABASE' => 'zwille', 'DB_SOCKET' => '/var/run/mysqld/mysqld.sock'],
             [
                 'driver' => 'pdo_mysql',
                 'host' => 'localhost',
-                'dbname' => 'eatmyshort',
+                'dbname' => 'zwille',
                 'unix_socket' => '/var/run/mysqld/mysqld.sock',
             ],
         ];

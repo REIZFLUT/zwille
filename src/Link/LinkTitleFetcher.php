@@ -53,7 +53,7 @@ final class LinkTitleFetcher
                 'max_duration' => 3,
                 'max_redirects' => self::MAX_REDIRECTS,
                 'headers' => [
-                    'User-Agent' => 'EatMyShort.Link Titelabruf',
+                    'User-Agent' => 'Zwille Titelabruf',
                     'Accept' => 'text/html',
                 ],
             ]);

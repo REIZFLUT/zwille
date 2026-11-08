@@ -14,7 +14,7 @@ trait TempDirectoryTrait
 
     protected function createTempDir(): string
     {
-        $this->tempDir = sys_get_temp_dir().'/emsl-plugins-'.bin2hex(random_bytes(6));
+        $this->tempDir = sys_get_temp_dir().'/zwille-plugins-'.bin2hex(random_bytes(6));
         mkdir($this->tempDir, 0o777, true);
 
         return $this->tempDir;

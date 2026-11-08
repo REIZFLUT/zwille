@@ -16,7 +16,7 @@ final class ApiTest extends AppTestCase
         $this->client->request('GET', '/api/v1/links');
         self::assertResponseStatusCodeSame(401);
 
-        $this->client->request('GET', '/api/v1/links', server: ['HTTP_AUTHORIZATION' => 'Bearer emsl_wrong']);
+        $this->client->request('GET', '/api/v1/links', server: ['HTTP_AUTHORIZATION' => 'Bearer zwl_wrong']);
         self::assertResponseStatusCodeSame(401);
     }
 
@@ -84,6 +84,31 @@ final class ApiTest extends AppTestCase
 
         $this->api('GET', '/api/v1/domains', $plain);
         self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testTokenIssuedBeforeTheRenameStillWorks(): void
+    {
+        $user = $this->createUser('api@example.com');
+        [$token] = ApiToken::issue($user, 'legacy');
+        $this->em()->persist($token);
+        $this->em()->flush();
+
+        // Tokens from before the rename to Zwille start with "emsl_"; lookup goes by hash only.
+        $legacyPlain = 'emsl_'.bin2hex(random_bytes(24));
+        $this->em()->getConnection()->executeStatement(
+            'UPDATE api_token SET token_hash = ? WHERE id = ?',
+            [ApiToken::hash($legacyPlain), $token->getId()],
+        );
+
+        $this->api('GET', '/api/v1/domains', $legacyPlain);
+        self::assertResponseIsSuccessful();
+    }
+
+    public function testNewTokensUseTheZwillePrefix(): void
+    {
+        $user = $this->createUser('api@example.com');
+        [, $plain] = ApiToken::issue($user, 'neu');
+        self::assertStringStartsWith('zwl_', $plain);
     }
 
     public function testDuplicateLocalisationLanguagesAreRejected(): void

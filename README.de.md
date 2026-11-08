@@ -1,12 +1,15 @@
-# EatMyShort.Link
+# Zwille
 
 [English](README.md) · **Deutsch**
+
+*Früher EatMyShort.Link. Eine Zwille hat eine Gabel und schießt in mehrere Richtungen – wie ein
+Kurzlink mit Zielen je Sprache und Gerät. Bart hätte seine Freude.*
 
 Ein moderner, sicherheitsbewusster, selbst gehosteter Kurzlink-Dienst für Unternehmen. Wie Bitly,
 nur vollständig unter eigener Kontrolle – auf der eigenen Infrastruktur, mit eigenen Domains und
 eigenen Daten.
 
-Auf einem aktuellen Symfony-8.1-Kern (PHP 8.4) verbindet EatMyShort.Link eine bewusst schlanke
+Auf einem aktuellen Symfony-8.1-Kern (PHP 8.4) verbindet Zwille eine bewusst schlanke
 Architektur mit zeitgemäßen Sicherheitsverfahren aus dem Unternehmensumfeld: phishing-resistente
 Passkey-Anmeldung, optional verpflichtende Zwei-Faktor-Authentifizierung, strikte
 Content-Security-Policies, datenschutzfreundliche Statistik und feingranulare Zugriffskontrolle.

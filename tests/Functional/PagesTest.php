@@ -19,11 +19,11 @@ final class PagesTest extends AppTestCase
         self::assertResponseIsSuccessful();
 
         $footer = $crawler->filter('footer.site');
-        self::assertSame(1, $footer->filter('a[href="https://github.com/REIZFLUT/eatmyshort.link"]')->count());
+        self::assertSame(1, $footer->filter('a[href="https://github.com/REIZFLUT/zwille"]')->count());
         self::assertSame('noopener noreferrer', $footer->filter('a')->attr('rel'));
         self::assertStringContainsString('GPL-3.0', $footer->text());
         // The product name is rendered once (as the configured title), not twice.
-        self::assertSame(1, substr_count($footer->text(), 'EatMyShort.Link'));
+        self::assertSame(1, substr_count($footer->text(), 'Zwille'));
     }
 
     public function testAllPagesRender(): void

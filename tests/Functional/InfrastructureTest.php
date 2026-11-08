@@ -100,7 +100,7 @@ final class InfrastructureTest extends KernelTestCase
         $domain->assertCommandIsSuccessful();
         self::assertStringContainsString('kurz.beispiel.de', $domain->getDisplay());
 
-        $domain->execute(['hostname' => 'admin.emsl.test']);
+        $domain->execute(['hostname' => 'admin.zwille.test']);
         self::assertSame(1, $domain->getStatusCode(), 'the admin host cannot become a short domain');
     }
 
@@ -108,12 +108,12 @@ final class InfrastructureTest extends KernelTestCase
     {
         $connection = static::getContainer()->get(Connection::class);
         $tester = $this->command('app:db:backup');
-        $target = sys_get_temp_dir().'/emsl-backup-'.bin2hex(random_bytes(4)).'.sqlite';
+        $target = sys_get_temp_dir().'/zwille-backup-'.bin2hex(random_bytes(4)).'.sqlite';
 
         if (!$connection->getDatabasePlatform() instanceof SQLitePlatform) {
             // MariaDB/MySQL are dumped with the client tools. Without them the command must fail
             // loudly and leave nothing behind; with them the dump is a gzip file, owner-only.
-            $target = sys_get_temp_dir().'/emsl-backup-'.bin2hex(random_bytes(4)).'.sql.gz';
+            $target = sys_get_temp_dir().'/zwille-backup-'.bin2hex(random_bytes(4)).'.sql.gz';
             $hasTool = array_filter(DbBackupCommand::DUMP_TOOLS, static fn (string $tool): bool => null !== new ExecutableFinder()->find($tool));
             try {
                 $tester->execute(['target' => $target]);

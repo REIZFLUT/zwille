@@ -1,12 +1,15 @@
-# EatMyShort.Link
+# Zwille
 
 **English** · [Deutsch](README.de.md)
+
+*Formerly EatMyShort.Link. A* Zwille *is German for slingshot — one fork, several directions,
+just like a short link with targets per language and device. Bart would approve.*
 
 A modern, security-conscious, self-hosted short-link service built for companies. Like Bitly,
 but entirely under your control — on your own infrastructure, with your own domains and your
 own data.
 
-Built on a current Symfony 8.1 core (PHP 8.4), EatMyShort.Link combines a deliberately lean
+Built on a current Symfony 8.1 core (PHP 8.4), Zwille combines a deliberately lean
 architecture with contemporary enterprise security practices: phishing-resistant passkey
 authentication, optional mandatory two-factor authentication, strict content security policies,
 privacy-first analytics and granular access controls. Designed with maintainability, operational

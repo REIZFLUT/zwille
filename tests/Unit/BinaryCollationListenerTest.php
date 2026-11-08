@@ -83,8 +83,8 @@ final class BinaryCollationListenerTest extends TestCase
     {
         $config = new Configuration();
         $config->setMetadataDriverImpl(new AttributeDriver([dirname(__DIR__, 2).'/src/Entity']));
-        $config->setProxyDir(sys_get_temp_dir().'/emsl-test-proxies');
-        $config->setProxyNamespace('EmslTestProxies');
+        $config->setProxyDir(sys_get_temp_dir().'/zwille-test-proxies');
+        $config->setProxyNamespace('ZwilleTestProxies');
         $config->enableNativeLazyObjects(true);
 
         // The MySQL credentials are never used: the platform is resolved from the version

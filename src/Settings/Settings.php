@@ -29,8 +29,8 @@ final class Settings implements ResetInterface
     public const string AGENT_ACCESS = 'api.agent_access';
 
     public const array DEFAULTS = [
-        self::TITLE => 'EatMyShort.Link',
-        // Simpsons yellow – a nod to the name, like the program itself.
+        self::TITLE => 'Zwille',
+        // Simpsons yellow – a nod to Bart's slingshot (Zwille) and the former name EatMyShort.Link.
         self::ACCENT => '#fed90f',
         self::LOGO => null,
         self::REQUIRE_2FA_ADMINS => '0',

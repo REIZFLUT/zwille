@@ -2,7 +2,8 @@
 // import map, which the Content-Security-Policy (rightly) blocks.
 import { initPasskeys } from './js/passkey.js';
 
-const THEME_KEY = 'ems-theme';
+// Same key as in js/theme-init.js, which also migrates the pre-rename key "ems-theme".
+const THEME_KEY = 'zwille-theme';
 
 // --- Toasts -----------------------------------------------------------------------------
 

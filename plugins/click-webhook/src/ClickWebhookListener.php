@@ -46,7 +46,11 @@ final readonly class ClickWebhookListener
             $headers['Content-Type'] = 'application/json';
             $secret = $this->settings['secret'] ?? null;
             if (\is_string($secret) && '' !== $secret) {
-                $headers['X-Emsl-Signature'] = 'sha256='.hash_hmac('sha256', $body, $secret);
+                $signature = 'sha256='.hash_hmac('sha256', $body, $secret);
+                $headers['X-Zwille-Signature'] = $signature;
+                // Deprecated name from before the rename to Zwille, still sent so existing
+                // receivers keep verifying. Remove in a later major version.
+                $headers['X-Emsl-Signature'] = $signature;
             }
 
             $response = $this->http->request('POST', $url, [

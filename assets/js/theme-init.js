@@ -6,7 +6,17 @@
     root.classList.add('js');
     var theme = null;
     try {
-        theme = window.localStorage.getItem('ems-theme');
+        var storage = window.localStorage;
+        theme = storage.getItem('zwille-theme');
+        // One-time move from the key used before the rename (formerly EatMyShort.Link).
+        var legacy = storage.getItem('ems-theme');
+        if (legacy !== null) {
+            if (theme === null) {
+                theme = legacy;
+                storage.setItem('zwille-theme', legacy);
+            }
+            storage.removeItem('ems-theme');
+        }
     } catch (e) {
         // Storage blocked (private mode, policy): fall back to the system setting.
     }

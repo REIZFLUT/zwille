@@ -137,7 +137,7 @@ final class AuditAdminTest extends AppTestCase
         $changes = $context['changes'] ?? null;
         self::assertIsArray($changes);
         self::assertSame('Neuer Titel', $changes['app.title']['to'] ?? null, 'a plain setting records old -> new');
-        self::assertSame('EatMyShort.Link', $changes['app.title']['from'] ?? null);
+        self::assertSame('Zwille', $changes['app.title']['from'] ?? null);
         self::assertArrayHasKey('branding.logo', $changes);
         self::assertArrayNotHasKey('to', $changes['branding.logo'], 'a secret-like setting records only "changed"');
         self::assertStringNotContainsString('SUPERSECRETLOGOBLOB', (string) json_encode($context), 'the raw value never reaches the trail');

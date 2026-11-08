@@ -10,7 +10,7 @@ framework:
         # project makes gc_maxlifetime below authoritative and logs users out after 8h.
         handler_id: session.handler.native_file
         save_path: '%kernel.project_dir%/var/sessions'
-        name: emsl_session
+        name: zwille_session
         cookie_secure: auto
         cookie_samesite: lax
         cookie_httponly: true

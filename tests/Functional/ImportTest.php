@@ -13,7 +13,7 @@ final class ImportTest extends AppTestCase
 {
     private function upload(string $content, string $name = 'links.csv'): UploadedFile
     {
-        $path = (string) tempnam(sys_get_temp_dir(), 'emsl_csv_');
+        $path = (string) tempnam(sys_get_temp_dir(), 'zwille_csv_');
         file_put_contents($path, $content);
 
         return new UploadedFile($path, $name, 'text/csv', null, true);

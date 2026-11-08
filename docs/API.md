@@ -1,7 +1,8 @@
 # REST-API v1
 
 Basis-URL: `https://<admin-host>/api/v1` · Format: JSON · Authentifizierung:
-persönliches Token aus **Profil → API** als `Authorization: Bearer emsl_…`.
+persönliches Token aus **Profil → API** als `Authorization: Bearer zwl_…`.
+Tokens aus der Zeit vor der Umbenennung (`emsl_…`, `emsa_…`) bleiben gültig.
 
 Ein persönliches Token handelt mit den Rechten seines Nutzers: eigene Links (Admins:
 alle), nur freigegebene Domains (Admins: alle aktiven). Limit: 120 Anfragen pro Minute
@@ -65,7 +66,7 @@ die Standardadresse. Als Eingabe ersetzt das übergebene Array die gesamte Menge
 
 ```bash
 curl -X POST https://links.example.com/api/v1/links \
-  -H "Authorization: Bearer emsl_…" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer zwl_…" -H "Content-Type: application/json" \
   -d '{"target_url": "https://www.example.com/messe", "code": "messe", "domain": "go.example.com"}'
 ```
 
@@ -122,7 +123,7 @@ Fehler: `400` bei einem `days`-Wert außerhalb der Liste.
 ## KI-Agent-Tokens
 
 Für KI-Agenten (z. B. Claude Code) und andere Automatisierung gibt es unter **Profil → API**
-eigene Tokens mit dem Präfix `emsa_`. Sie benutzen dieselben Endpunkte, dürfen aber weniger:
+eigene Tokens mit dem Präfix `zwa_` (vor der Umbenennung `emsa_`). Sie benutzen dieselben Endpunkte, dürfen aber weniger:
 
 - **Nie Admin-Rechte**, auch wenn das Token einem Admin gehört: nur eigene Links und die dem
   Nutzer freigegebenen Domains, die Gesamtstatistik nur über eigene Links.

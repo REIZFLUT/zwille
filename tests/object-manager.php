@@ -14,7 +14,7 @@ foreach ([
     'APP_SECRET' => 'phpstan-analysis-secret-0123456789abcdef',
     'APP_ADMIN_HOSTS' => 'localhost',
     'DEFAULT_URI' => 'http://localhost',
-    'DATABASE_URL' => 'sqlite:///%kernel.project_dir%/var/data/eatmyshort.sqlite',
+    'DATABASE_URL' => 'sqlite:///%kernel.project_dir%/var/data/zwille.sqlite',
     'MAILER_DSN' => 'null://null',
 ] as $name => $value) {
     $_SERVER[$name] ??= $_ENV[$name] ?? $value;

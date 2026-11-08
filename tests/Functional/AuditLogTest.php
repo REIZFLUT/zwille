@@ -150,7 +150,7 @@ final class AuditLogTest extends AppTestCase
         static::getContainer()->get(AuditLogger::class)->record('test.denylist', [
             'password' => 'hunter2',
             'totp_secret' => 'JBSWY3DP',
-            'api_token' => 'emsl_123',
+            'api_token' => 'zwl_123',
             'backup_code' => 'abcd-efgh',
             'email' => 'ada@example.com',
             'keep_me' => 'yes',

@@ -17,6 +17,8 @@ final readonly class SecretBox
 
     public function __construct(#[Autowire('%kernel.secret%')] string $appSecret)
     {
+        // "emsl-" dates from before the rename to Zwille. It is part of the key derivation:
+        // changing it would make every stored TOTP seed unreadable, so it stays as it is.
         $this->key = sodium_crypto_generichash('emsl-secretbox|'.$appSecret, '', \SODIUM_CRYPTO_SECRETBOX_KEYBYTES);
     }
 

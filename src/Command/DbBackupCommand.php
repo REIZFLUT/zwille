@@ -41,7 +41,7 @@ final readonly class DbBackupCommand
     ) {
     }
 
-    public function __invoke(SymfonyStyle $io, #[Argument('Target file (default: var/backup/eatmyshort-<timestamp>.sqlite for SQLite, var/backup/eatmyshort-<timestamp>.sql.gz for MySQL/MariaDB)')] ?string $target = null): int
+    public function __invoke(SymfonyStyle $io, #[Argument('Target file (default: var/backup/zwille-<timestamp>.sqlite for SQLite, var/backup/zwille-<timestamp>.sql.gz for MySQL/MariaDB)')] ?string $target = null): int
     {
         $platform = $this->connection->getDatabasePlatform();
 
@@ -60,7 +60,7 @@ final readonly class DbBackupCommand
 
     private function backupSqlite(SymfonyStyle $io, ?string $target): int
     {
-        $target ??= \sprintf('%s/var/backup/eatmyshort-%s.sqlite', $this->projectDir, date('Ymd-His'));
+        $target ??= \sprintf('%s/var/backup/zwille-%s.sqlite', $this->projectDir, date('Ymd-His'));
         if (file_exists($target)) {
             $io->error("$target already exists.");
 
@@ -108,7 +108,7 @@ final readonly class DbBackupCommand
             return Command::FAILURE;
         }
 
-        $target ??= \sprintf('%s/var/backup/eatmyshort-%s.sql.gz', $this->projectDir, date('Ymd-His'));
+        $target ??= \sprintf('%s/var/backup/zwille-%s.sql.gz', $this->projectDir, date('Ymd-His'));
         if (file_exists($target)) {
             $io->error("$target already exists.");
 

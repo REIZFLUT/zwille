@@ -33,7 +33,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 #[AsEventListener(event: KernelEvents::TERMINATE)]
 final class ClickRecorder
 {
-    private const string ATTRIBUTE = '_emsl_click_link';
+    private const string ATTRIBUTE = '_zwille_click_link';
 
     public function __construct(
         private readonly EntityManagerInterface $em,

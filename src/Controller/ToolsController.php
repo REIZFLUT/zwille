@@ -47,7 +47,7 @@ final class ToolsController extends AbstractController
             $js .= "var c=prompt(decodeURIComponent('".rawurlencode($prompt)."'));if(null===c)return;";
         }
         $js .= \sprintf(
-            "window.open('%s?url='+u+'&title='+t%s,'emsl','width=720,height=640');",
+            "window.open('%s?url='+u+'&title='+t%s,'zwille','width=720,height=640');",
             $base,
             $suffix,
         );

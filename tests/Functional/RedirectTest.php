@@ -25,7 +25,7 @@ final class RedirectTest extends AppTestCase
 
         self::assertResponseRedirects('https://www.example.com/sommer', 302);
         self::assertResponseHeaderSame('Cache-Control', 'no-store, private');
-        self::assertResponseNotHasCookie('emsl_session');
+        self::assertResponseNotHasCookie('zwille_session');
 
         $this->shortRequest('links.example.org', '/sommer');
         self::assertResponseRedirects('https://www.example.org/anders', 302);

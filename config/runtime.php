@@ -59,7 +59,7 @@ if ('test' === $env) {
 // Konfiguration. Ohne .env-Datei muss APP_ENV (und die uebrige Konfiguration) als
 // echte Umgebungsvariable gesetzt oder .env.example nach .env kopiert werden.
 if (null === $dotenvFile && null === $env) {
-    $message = 'EatMyShort.Link: Es liegt keine .env-Datei im Projekt und APP_ENV ist nicht gesetzt. '
+    $message = 'Zwille: Es liegt keine .env-Datei im Projekt und APP_ENV ist nicht gesetzt. '
         .'Entweder .env.example nach .env kopieren oder APP_ENV (und die uebrige Konfiguration) '
         .'als echte Umgebungsvariable setzen - siehe docs/INSTALL.md.';
 
@@ -111,7 +111,7 @@ $explicitDatabaseUrl = \is_string($explicitDatabaseUrl) ? trim($explicitDatabase
 try {
     $databaseUrl = (new App\Doctrine\DatabaseUrlComposer($projectDir))->compose();
 } catch (InvalidArgumentException $exception) {
-    $message = 'EatMyShort.Link: '.$exception->getMessage().' Siehe docs/INSTALL.md.';
+    $message = 'Zwille: '.$exception->getMessage().' Siehe docs/INSTALL.md.';
 
     if ('cli' === \PHP_SAPI) {
         fwrite(\STDERR, $message."\n");

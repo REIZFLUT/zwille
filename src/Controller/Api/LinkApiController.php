@@ -44,7 +44,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
- * REST API v1, authenticated with personal access tokens ("Authorization: Bearer emsl_…").
+ * REST API v1, authenticated with personal access tokens ("Authorization: Bearer zwl_…").
  * See docs/API.md.
  */
 #[Route('/api/v1', format: 'json')]
