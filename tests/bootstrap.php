@@ -14,16 +14,22 @@ $sqliteDatabase = $projectDir.'/var/data/test.sqlite';
 // defined here and every run behaves the same. putenv() matters: the console kernel below
 // and any child process inherit the real process environment, not $_SERVER.
 //
-// DATABASE_URL is the one exception: a caller may point the suite at another driver
-// (MariaDB/MySQL) by exporting DATABASE_URL. Any SQLite value - including the one a developer
-// may have exported for the dev environment - is ignored and mapped to the dedicated test file
-// below, so the SQLite path never depends on the ambient environment.
-$databaseUrl = $_SERVER['DATABASE_URL'] ?? $_ENV['DATABASE_URL'] ?? (getenv('DATABASE_URL') ?: null);
-$isSqlite = !\is_string($databaseUrl) || '' === $databaseUrl
-    || str_starts_with($databaseUrl, 'sqlite:')
-    || str_starts_with($databaseUrl, 'sqlite3:');
+// The database is the one exception: a caller may point the suite at another driver
+// (MariaDB/MySQL), either with DATABASE_URL or with the DB_* variables - resolved exactly like
+// the app does it (DatabaseUrlComposer, also used by config/runtime.php). Any SQLite result -
+// including a path a developer may have exported for the dev environment - is ignored and
+// mapped to the dedicated test file below, so the SQLite path never depends on the ambient
+// environment.
+require_once $projectDir.'/src/Doctrine/DatabaseUrlComposer.php';
+$databaseUrl = (new App\Doctrine\DatabaseUrlComposer($projectDir))->compose();
+$isSqlite = str_starts_with($databaseUrl, 'sqlite:') || str_starts_with($databaseUrl, 'sqlite3:');
 if ($isSqlite) {
     $databaseUrl = 'sqlite:///'.$sqliteDatabase;
+    // var/ is not part of the repository: on a fresh checkout (CI) the directory is missing and
+    // SQLite cannot create the file ("unable to open database file").
+    if (!is_dir(\dirname($sqliteDatabase))) {
+        mkdir(\dirname($sqliteDatabase), 0o775, true);
+    }
 }
 
 $testEnv = [
